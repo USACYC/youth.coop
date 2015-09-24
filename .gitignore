@@ -15,3 +15,4 @@ sites/all/themes/webskillet15
 *.sql
 *.tgz
 *.tar.gz
+*~
