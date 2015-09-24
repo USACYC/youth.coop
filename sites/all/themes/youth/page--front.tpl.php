@@ -11,6 +11,7 @@
 <div id="header-wrapper">
   <header id="header" role="banner" class="clearfix container">
     <?php print render($page['logo']); ?>
+    <p id="tagline">Empowering youth in the cooperative movement</p>
     <?php print render($page['header']); ?>
   </header> <!-- /#header -->
 </div>

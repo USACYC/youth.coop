@@ -38,6 +38,7 @@ Table of contents:
  */
 
 #header-wrapper, #navigation-wrapper, #main-wrapper, #footer-wrapper { padding-top: 10px; padding-bottom: 10px; }
+.container { max-width: 980px; }
 
 /**
  * 2. Typography
@@ -120,20 +121,24 @@ div.error, .error { color: #cc0000; }
 #block-block-2 ul li:nth-child(5) img { position: relative; top: 7px; left: 6px; }
 #block-block-2 li:nth-child(2) a { position: relative; top: 2px; }
 
+p#tagline { font-family: 'Coming Soon', cursive; font-size: 1.2em; text-transform: lowercase; }
+
 @media screen and (max-width: 767px) {
   .region-header .block { margin-bottom: 10px; }
 }
 @media screen and (min-width: 768px) {
-  #header { margin-top: 10px; }
-  .region-logo { width: 424px; float: left; }
-  .region-header { float: right; }
+  #header { margin-top: 10px; height: 120px; }
+  .region-logo { width: 330px; position: absolute; top: 32px; }
+  p#tagline { position: absolute; width: 160px; left: 370px; top: 30px; }
+  .region-header { position: absolute; right: 10px; }
   #block-block-2 { position: relative; top: 5px; }
   #block-search-form { position: relative; top: 19px; }
   #block-block-3 { position: relative; top: 35px; }
 }
 @media screen and (min-width: 992px) {
-  .region-logo { width: 550px; }
-  .region-header { margin-right: 80px; }
+  .region-logo { width: 483px; top: 15px; }
+  p#tagline { left: 560px; font-size: 1.4em; width: 187px; top: 38px; }
+  .region-header {  }
 }
 
 
