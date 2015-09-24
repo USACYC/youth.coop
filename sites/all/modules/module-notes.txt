@@ -2,3 +2,4 @@
 Particular care should be given if updating any of these:
 - media -- patched to enable plupload on multivalue image fields
 - linkit_views -- patched to work with linkit-3.x
+- field_multiple_limit -- patched to allow random sorting of multivalue fields -- https://www.drupal.org/files/issues/field_multiple_limit-merge-field-formatter-random-1860624-38.patch from dgo.to/1860624
