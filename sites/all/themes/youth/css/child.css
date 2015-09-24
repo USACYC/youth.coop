@@ -62,7 +62,7 @@ h5, h6 { font-size: 0.8em; font-weight: bold; margin-bottom: 0; }
 a { text-decoration: none; }
 a:link { color: #44889f; }
 a:visited { color: #44889f; }
-.no-touch a:hover { color: #a62a32; }
+.no-touch a:hover { color: #0099BE; }
 a:active { color: #44889f; }
 
 /* 2.6 Images */
@@ -101,12 +101,18 @@ div.error, .error { color: #cc0000; }
  */
 #header-wrapper, #navigation-wrapper { padding: 0; }
 #header, #navigation { background-color: #222; color: #ffe; }
-#site-name-slogan { text-indent: -999em; position: absolute; }
+#header { padding-top: 20px; }
 
 /* Social Links */
-#block-block-2 ul { margin-bottom: 0; }
-#block-block-2 ul li { display: inline; }
+#block-block-2 ul { margin: 0; }
+#block-block-2 ul li { display: inline; margin-left: 7px; }
+#block-block-2 ul li:first-child { margin: 0; }
 #block-block-2 li a { background-color: grey; border-radius: 30px; display: inline-block; width: 30px; height: 30px; }
+#block-block-2 li:first-child a { background-color: #00B874; }
+#block-block-2 li:nth-child(2) a { background-color: #DF1A3D; }
+#block-block-2 li:nth-child(3) a { background-color: #81BC00; }
+#block-block-2 li:nth-child(4) a { background-color: #0099BE; }
+#block-block-2 li:nth-child(5) a { background-color: #ED7800; }
 #block-block-2 ul li:first-child img { position: relative; top: 5px; left: 5px; }
 #block-block-2 ul li:nth-child(2) img { position: relative; top: 6px; left: 10px; }
 #block-block-2 ul li:nth-child(3) img { position: relative; top: 5px; left: 8px; }
@@ -114,12 +120,20 @@ div.error, .error { color: #cc0000; }
 #block-block-2 ul li:nth-child(5) img { position: relative; top: 7px; left: 6px; }
 #block-block-2 li:nth-child(2) a { position: relative; top: 2px; }
 
+@media screen and (max-width: 767px) {
+  .region-header .block { margin-bottom: 10px; }
+}
 @media screen and (min-width: 768px) {
-  #header #logo img { width: 66%; float: left; }
-  .region-header { width: 33%; float: left; }
-  #block-block-2 { position: relative; top: 38px; }
-  #block-search-form { position: relative; top: 56px; }
-  #block-block-3 { position: relative; top: 80px; }
+  #header { margin-top: 10px; }
+  .region-logo { width: 424px; float: left; }
+  .region-header { float: right; }
+  #block-block-2 { position: relative; top: 5px; }
+  #block-search-form { position: relative; top: 19px; }
+  #block-block-3 { position: relative; top: 35px; }
+}
+@media screen and (min-width: 992px) {
+  .region-logo { width: 550px; }
+  .region-header { margin-right: 80px; }
 }
 
 
@@ -133,7 +147,15 @@ div.error, .error { color: #cc0000; }
 .om-maximenu.om-maximenu-main-menu ul.om-menu li.om-leaf,
 .om-maximenu.om-maximenu-main-menu ul.om-menu li.om-leaf .om-link { min-height: 40px; }
 .om-maximenu-no-style .om-maximenu-middle-right { padding: 1em; }
-.om-maximenu-no-style .om-maximenu-middle { background: lightgrey; }
+@media screen and (min-width: 768px) {
+.om-maximenu-no-style .om-maximenu-middle { background: rgb(255, 255, 243); }
+.om-maximenu-no-style .leaf-about .om-maximenu-middle { border-bottom: solid 5px #0099BE; }
+.om-maximenu-no-style .leaf-membership .om-maximenu-middle { border-bottom: solid 5px #81BC00; }
+.om-maximenu-no-style .leaf-programs .om-maximenu-middle { border-bottom: solid 5px #DF1A3D; }
+.om-maximenu-no-style .leaf-initiatives .om-maximenu-middle { border-bottom: solid 5px #00B874; }
+.om-maximenu-no-style .leaf-voice .om-maximenu-middle { border-bottom: solid 5px #ED7800; }
+.om-maximenu-no-style .leaf-allies .om-maximenu-middle { border-bottom: solid 5px #0099BE; }
+}
 
 /**
  * 5. Highlighted
@@ -203,7 +225,7 @@ div.error, .error { color: #cc0000; }
 	   add style.css in child theme .info file,
 	   and move the navigation section from the tablet query to the desktop query. */
 	#navigation-wrapper, #navigation { height: 40px; }
-	#navigation ul { height: 40px; line-height: 40px; }
+	#navigation ul { /*height: 40px;*/ line-height: 40px; }
 	#navigation ul.main-menu li { margin: 5px 0; padding: 0; height: 30px; line-height: 30px; }
 	#navigation ul.main-menu li a { padding: 0 1em; }
 	#navigation ul.main-menu li.first a { padding-left: 0; }

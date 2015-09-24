@@ -34,7 +34,7 @@
   <div id="main-wrapper"><div id="main" class="clearfix container"><div class="row">
 
 <?php endif; /* !$ajax */ ?>
-  <section id="page" role="main" class="clearfix <?php echo $main_classes; ?>">
+  <section id="page" role="main" class="clearfix col-md-4">
     <?php print $messages; ?>
     <a id="main-content"></a>
     <?php print render($title_prefix); ?>
@@ -48,13 +48,13 @@
 <?php if (!$ajax): ?>
   
   <?php if ($page['sidebar_first']): ?>
-    <aside id="sidebar-first" role="complimentary" class="sidebar clearfix <?php echo $sidebar_first_classes; ?>">
+    <aside id="sidebar-first" role="complimentary" class="sidebar clearfix col-md-4">
       <?php print render($page['sidebar_first']); ?>
     </aside>  <!-- /#sidebar-first -->
   <?php endif; ?>
   
   <?php if ($page['sidebar_second']): ?>
-    <aside id="sidebar-second" role="complimentary" class="sidebar clearfix <?php echo $sidebar_second_classes; ?>">
+    <aside id="sidebar-second" role="complimentary" class="sidebar clearfix col-md-4">
       <?php print render($page['sidebar_second']); ?>
     </aside>  <!-- /#sidebar-second -->
   <?php endif; ?>

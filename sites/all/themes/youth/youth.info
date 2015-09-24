@@ -5,6 +5,7 @@ base theme = webskillet15
 stylesheets[all][] = css/child.css
 scripts[] = js/script.js
 
+regions[logo]           = Logo
 regions[header]         = Header
 regions[navigation]     = Navigation
 regions[highlighted]    = Highlighted
