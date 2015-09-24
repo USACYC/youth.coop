@@ -10,3 +10,8 @@ sites/*/private
 sites/all/modules/custom/
 sites/all/modules/custom/*
 sites/all/themes/webskillet15
+
+# Ignore backups
+*.sql
+*.tgz
+*.tar.gz
