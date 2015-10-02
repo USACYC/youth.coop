@@ -149,6 +149,7 @@ p#tagline { font-family: 'Coming Soon', cursive; font-size: 1.2em; text-transfor
 #navigation li ul.main-menu li { line-height: 40px; }
 
 /* om-maximenu */
+.om-maximenu-content { color: #333; }
 .om-maximenu.om-maximenu-main-menu ul.om-menu li.om-leaf,
 .om-maximenu.om-maximenu-main-menu ul.om-menu li.om-leaf .om-link { min-height: 40px; }
 .om-maximenu-no-style .om-maximenu-middle-right { padding: 1em; }
