@@ -158,11 +158,11 @@ var submitcount = 0;
 function submitOnce(obj, formId, procText) {
   // if named button clicked, change text
   if (obj.value != null) {
-    obj.value = procText + " ...";
+    cj('input[name=' + obj.name + ']').val(procText + " ...");
   }
   cj(obj).closest('form').attr('data-warn-changes', 'false');
   if (document.getElementById) { // disable submit button for newer browsers
-    obj.disabled = true;
+    cj('input[name=' + obj.name + ']').attr("disabled", true);
     document.getElementById(formId).submit();
     return true;
   }
@@ -362,6 +362,13 @@ CRM.strings = CRM.strings || {};
    * @param options object
    */
   $.fn.crmSelect2 = function(options) {
+    if (options === 'destroy') {
+      return $(this).each(function() {
+        $(this)
+          .removeClass('crm-ajax-select')
+          .select2('destroy');
+      });
+    }
     return $(this).each(function () {
       var
         $el = $(this),
@@ -396,6 +403,15 @@ CRM.strings = CRM.strings || {};
    * @param options object
    */
   $.fn.crmEntityRef = function(options) {
+    if (options === 'destroy') {
+      return $(this).each(function() {
+        var entity = $(this).data('api-entity') || '';
+        $(this)
+          .off('.crmEntity')
+          .removeClass('crm-form-entityref crm-' + entity.toLowerCase() + '-ref')
+          .crmSelect2('destroy');
+      });
+    }
     options = options || {};
     options.select = options.select || {};
     return $(this).each(function() {
@@ -574,6 +590,9 @@ CRM.strings = CRM.strings || {};
     });
   }
 
+  /**
+   * @see http://wiki.civicrm.org/confluence/display/CRMDOC/crmDatepicker
+   */
   $.fn.crmDatepicker = function(options) {
     return $(this).each(function() {
       if ($(this).is('.crm-form-date-wrapper .crm-hidden-date')) {
@@ -587,7 +606,7 @@ CRM.strings = CRM.strings || {};
         $timeField = $(),
         $clearLink = $();
 
-      if (settings.allowClear !== undefined ? settings.allowClear : !$dataField.hasClass('required')) {
+      if (settings.allowClear !== undefined ? settings.allowClear : !$dataField.is('.required, [required]')) {
         $clearLink = $('<a class="crm-hover-button crm-clear-link" title="'+ ts('Clear') +'"><span class="icon ui-icon-close"></span></a>')
           .insertAfter($dataField);
       }
@@ -607,15 +626,15 @@ CRM.strings = CRM.strings || {};
         $dateField = $('<input>').insertAfter($dataField);
         copyAttributes($dataField, $dateField, ['placeholder', 'style', 'class', 'disabled']);
         $dateField.addClass('crm-form-text crm-form-date');
-        settings.dateFormat = settings.dateFormat || CRM.config.dateInputFormat;
-        settings.changeMonth = _.includes('m', settings.dateFormat);
-        settings.changeYear = _.includes('y', settings.dateFormat);
+        settings.date = typeof settings.date === 'string' ? settings.date : CRM.config.dateInputFormat;
+        settings.changeMonth = _.includes('m', settings.date);
+        settings.changeYear = _.includes('y', settings.date);
         $dateField.datepicker(settings).change(updateDataField);
       }
       // Rudimentary validation. TODO: Roll into use of jQUery validate and ui.datepicker.validation
       function isValidDate() {
         try {
-          $.datepicker.parseDate(settings.dateFormat, $dateField.val());
+          $.datepicker.parseDate(settings.date, $dateField.val());
           return true;
         } catch (e) {
           return false;
@@ -1269,6 +1288,9 @@ CRM.strings = CRM.strings || {};
         CRM.confirm({
           title: ts('Preview'),
           resizable: true,
+          // Prevent overlap with the menubar
+          maxHeight: $(window).height() - 30,
+          position: {my: 'center', at: 'center center+15', of: window},
           message: '<div class="crm-custom-image-popup"><img style="max-width: 100%" src="' + $(this).attr('href') + '"></div>',
           options: null
         });

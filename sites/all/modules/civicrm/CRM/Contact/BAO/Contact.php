@@ -2126,6 +2126,9 @@ ORDER BY civicrm_email.is_primary DESC";
         }
         elseif ($fieldName == 'email') {
           $data['email'][$loc]['email'] = $value;
+          if (empty($contactID)) {
+            $data['email'][$loc]['is_primary'] = 1;
+          }
         }
         elseif ($fieldName == 'im') {
           if (isset($params[$key . '-provider_id'])) {
@@ -2570,9 +2573,11 @@ AND       civicrm_openid.is_primary = 1";
       case 'rel':
         $result = CRM_Contact_BAO_Relationship::getRelationship($contactId,
           CRM_Contact_BAO_Relationship::CURRENT,
-          0, 1
+          0, 0, 0,
+          NULL, NULL,
+          TRUE
         );
-        return $result;
+        return count($result);
 
       case 'group':
 

@@ -525,7 +525,7 @@ class CRM_Core_Resources {
     $patterns = (array) $patterns;
     $files = array();
     foreach ($patterns as $pattern) {
-      if ($pattern{0} === '/') {
+      if (CRM_Utils_File::isAbsolute($pattern)) {
         // Absolute path.
         $files = array_merge($files, (array) glob($pattern, $flags));
       }
@@ -587,7 +587,7 @@ class CRM_Core_Resources {
 
       // Add resources from coreResourceList
       $jsWeight = -9999;
-      foreach ($this->coreResourceList() as $file) {
+      foreach ($this->coreResourceList($region) as $file) {
         if (substr($file, -2) == 'js') {
           // Don't bother  looking for ts() calls in packages, there aren't any
           $translate = (substr($file, 0, 3) == 'js/');
@@ -685,9 +685,10 @@ class CRM_Core_Resources {
   /**
    * List of core resources we add to every CiviCRM page.
    *
+   * @param string $region
    * @return array
    */
-  public function coreResourceList() {
+  public function coreResourceList($region) {
     $config = CRM_Core_Config::singleton();
     // Use minified files for production, uncompressed in debug mode
     // Note, $this->addScriptFile would automatically search for the non-minified file in debug mode but this is probably faster
@@ -719,7 +720,7 @@ class CRM_Core_Resources {
     // These scripts are only needed by back-office users
     if (CRM_Core_Permission::check('access CiviCRM')) {
       $items[] = "packages/jquery/plugins/jquery.menu$min.js";
-      $items[] = "css/navigation.css";
+      $items[] = "css/civicrmNavigation.css";
       $items[] = "packages/jquery/plugins/jquery.jeditable$min.js";
       $items[] = "packages/jquery/plugins/jquery.notify$min.js";
       $items[] = "js/jquery/jquery.crmeditable.js";
@@ -749,8 +750,8 @@ class CRM_Core_Resources {
       }
     }
 
-    // CMS-specific resources
-    $config->userSystem->appendCoreResources($items);
+    // Allow hooks to modify this list
+    CRM_Utils_Hook::coreResourceList($items, $region);
 
     return $items;
   }

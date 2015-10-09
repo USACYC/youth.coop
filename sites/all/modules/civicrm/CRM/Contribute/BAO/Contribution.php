@@ -135,6 +135,19 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution {
       }
     }
 
+    //if contribution is created with cancelled or refunded status, add credit note id
+    if (!empty($params['contribution_status_id'])) {
+      $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+
+      if (($params['contribution_status_id'] == array_search('Refunded', $contributionStatus)
+          || $params['contribution_status_id'] == array_search('Cancelled', $contributionStatus))
+      ) {
+        if (empty($params['creditnote_id']) || $params['creditnote_id'] == "null") {
+          $params['creditnote_id'] = self::createCreditNoteId();
+        }
+      }
+    }
+
     //set defaults in create mode
     if (!$contributionID) {
       CRM_Core_DAO::setCreateDefaults($params, self::getDefaults());
@@ -160,6 +173,9 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution {
         $setPrevContribution = FALSE;
       }
     }
+    if ($contributionID && $setPrevContribution) {
+      $params['prevContribution'] = self::getValues(array('id' => $contributionID), CRM_Core_DAO::$_nullArray, CRM_Core_DAO::$_nullArray);
+    }
 
     if ($contributionID) {
       CRM_Utils_Hook::pre('edit', 'Contribution', $contributionID, $params);
@@ -175,10 +191,6 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution {
     if (!CRM_Utils_Rule::currencyCode($contribution->currency)) {
       $config = CRM_Core_Config::singleton();
       $contribution->currency = $config->defaultCurrency;
-    }
-
-    if ($contributionID && $setPrevContribution) {
-      $params['prevContribution'] = self::getValues(array('id' => $contributionID), CRM_Core_DAO::$_nullArray, CRM_Core_DAO::$_nullArray);
     }
 
     $result = $contribution->save();
@@ -313,6 +325,19 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution {
       }
     }
 
+    //if contribution is created with cancelled or refunded status, add credit note id
+    if (!empty($params['contribution_status_id'])) {
+      $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+
+      if (($params['contribution_status_id'] == array_search('Refunded', $contributionStatus)
+          || $params['contribution_status_id'] == array_search('Cancelled', $contributionStatus))
+      ) {
+        if (empty($params['creditnote_id']) || $params['creditnote_id'] == "null") {
+          $params['creditnote_id'] = self::createCreditNoteId();
+        }
+      }
+    }
+
     $transaction = new CRM_Core_Transaction();
 
     $contribution = self::add($params, $ids);
@@ -370,14 +395,11 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution {
     // Handle soft credit and / or link to personal campaign page
     $softIDs = CRM_Contribute_BAO_ContributionSoft::getSoftCreditIds($contribution->id);
 
-    //Delete PCP against this contribution and create new on submitted PCP information
     $pcpId = CRM_Contribute_BAO_ContributionSoft::getSoftCreditIds($contribution->id, TRUE);
-    if ($pcpId) {
-      $deleteParams = array('id' => $pcpId);
-      CRM_Contribute_BAO_ContributionSoft::del($deleteParams);
-    }
+
     if ($pcp = CRM_Utils_Array::value('pcp', $params)) {
       $softParams = array();
+      $softParams['id'] = $pcpId ? $pcpId : NULL;
       $softParams['contribution_id'] = $contribution->id;
       $softParams['pcp_id'] = $pcp['pcp_made_through_id'];
       $softParams['contact_id'] = CRM_Core_DAO::getFieldValue('CRM_PCP_DAO_PCP',
@@ -391,12 +413,31 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution {
       $softParams['soft_credit_type_id'] = CRM_Core_OptionGroup::getValue('soft_credit_type', 'pcp', 'name');
       $contributionSoft = CRM_Contribute_BAO_ContributionSoft::add($softParams);
       //Send notification to owner for PCP
-      if ($contributionSoft->pcp_id) {
+      if ($contributionSoft->pcp_id && empty($pcpId)) {
         CRM_Contribute_Form_Contribution_Confirm::pcpNotifyOwner($contribution, $contributionSoft);
       }
     }
+    //Delete PCP against this contribution and create new on submitted PCP information
+    elseif (array_key_exists('pcp', $params) && $pcpId) {
+      $deleteParams = array('id' => $pcpId);
+      CRM_Contribute_BAO_ContributionSoft::del($deleteParams);
+    }
     if (isset($params['soft_credit'])) {
       $softParams = $params['soft_credit'];
+      foreach ($softParams as $softParam) {
+        if (!empty($softIDs)) {
+          $key = key($softIDs);
+          $softParam['id'] = $softIDs[$key];
+          unset($softIDs[$key]);
+        }
+        $softParam['contribution_id'] = $contribution->id;
+        $softParam['currency'] = $contribution->currency;
+        //case during Contribution Import when we assign soft contribution amount as contribution's total_amount by default
+        if (empty($softParam['amount'])) {
+          $softParam['amount'] = $contribution->total_amount;
+        }
+        CRM_Contribute_BAO_ContributionSoft::add($softParam);
+      }
 
       if (!empty($softIDs)) {
         foreach ($softIDs as $softID) {
@@ -405,16 +446,6 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution {
             CRM_Contribute_BAO_ContributionSoft::del($deleteParams);
           }
         }
-      }
-
-      foreach ($softParams as $softParam) {
-        $softParam['contribution_id'] = $contribution->id;
-        $softParam['currency'] = $contribution->currency;
-        //case during Contribution Import when we assign soft contribution amount as contribution's total_amount by default
-        if (empty($softParam['amount'])) {
-          $softParam['amount'] = $contribution->total_amount;
-        }
-        CRM_Contribute_BAO_ContributionSoft::add($softParam);
       }
     }
 
@@ -1047,7 +1078,7 @@ GROUP BY p.id
       $contributionDAO->id = $honorDAO->contribution_id;
 
       if ($contributionDAO->find(TRUE)) {
-        $params[$contributionDAO->id]['honor_type'] = CRM_Core_OptionGroup::getLabel('soft_credit_type', $honorDAO->soft_credit_type_id, 'value');
+        $params[$contributionDAO->id]['honor_type'] = CRM_Core_PseudoConstant::getLabel('CRM_Contribute_BAO_ContributionSoft', 'soft_credit_type_id', $honorDAO->soft_credit_type_id);
         $params[$contributionDAO->id]['honorId'] = $contributionDAO->contact_id;
         $params[$contributionDAO->id]['display_name'] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $contributionDAO->contact_id, 'display_name');
         $params[$contributionDAO->id]['type'] = $type[$contributionDAO->financial_type_id];
@@ -2336,7 +2367,7 @@ WHERE  contribution_id = %1 ";
         if (!empty($lineItem)) {
           $itemId = key($lineItem);
           foreach ($lineItem as &$eachItem) {
-            if (array_key_exists($eachItem['membership_type_id'], $this->_relatedObjects['membership'])) {
+            if (is_array($this->_relatedObjects['membership']) && array_key_exists($eachItem['membership_type_id'], $this->_relatedObjects['membership'])) {
               $eachItem['join_date'] = CRM_Utils_Date::customFormat($this->_relatedObjects['membership'][$eachItem['membership_type_id']]->join_date);
               $eachItem['start_date'] = CRM_Utils_Date::customFormat($this->_relatedObjects['membership'][$eachItem['membership_type_id']]->start_date);
               $eachItem['end_date'] = CRM_Utils_Date::customFormat($this->_relatedObjects['membership'][$eachItem['membership_type_id']]->end_date);
@@ -2736,7 +2767,7 @@ WHERE  contribution_id = %1 ";
         if (!empty($params['payment_processor'])) {
           $balanceTrxnParams['payment_processor_id'] = $params['payment_processor'];
         }
-        CRM_Core_BAO_FinancialTrxn::create($balanceTrxnParams);
+        $financialTxn = CRM_Core_BAO_FinancialTrxn::create($balanceTrxnParams);
       }
     }
 
@@ -2927,8 +2958,9 @@ WHERE  contribution_id = %1 ";
       CRM_Price_BAO_LineItem::processPriceSet($entityId, CRM_Utils_Array::value('line_item', $params), $params['contribution'], $entityTable, $update);
     }
 
-    // create batch entry if batch_id is passed
-    if (!empty($params['batch_id'])) {
+    // create batch entry if batch_id is passed and
+    // ensure no batch entry is been made on 'Pending' or 'Failed' contribution, CRM-16611
+    if (!empty($params['batch_id']) && !empty($financialTxn)) {
       $entityParams = array(
         'batch_id' => $params['batch_id'],
         'entity_table' => 'civicrm_financial_trxn',
@@ -2989,18 +3021,29 @@ WHERE  contribution_id = %1 ";
           || $params['contribution']->contribution_status_id == array_search('Cancelled', $contributionStatus))
       ) {
         $params['trxnParams']['total_amount'] = -$params['total_amount'];
+        if (empty($params['contribution']->creditnote_id) || $params['contribution']->creditnote_id == "null") {
+          $creditNoteId = self::createCreditNoteId();
+          CRM_Core_DAO::setFieldValue('CRM_Contribute_DAO_Contribution', $params['contribution']->id, 'creditnote_id', $creditNoteId);
+        }
       }
       elseif (($params['prevContribution']->contribution_status_id == array_search('Pending', $contributionStatus)
           && $params['prevContribution']->is_pay_later) || $params['prevContribution']->contribution_status_id == array_search('In Progress', $contributionStatus)
       ) {
         $financialTypeID = CRM_Utils_Array::value('financial_type_id', $params) ? $params['financial_type_id'] : $params['prevContribution']->financial_type_id;
-        if ($params['contribution']->contribution_status_id == array_search('Cancelled', $contributionStatus)) {
-          $params['trxnParams']['to_financial_account_id'] = NULL;
-          $params['trxnParams']['total_amount'] = -$params['total_amount'];
-        }
         $relationTypeId = key(CRM_Core_PseudoConstant::accountOptionValues('account_relationship', NULL, " AND v.name LIKE 'Accounts Receivable Account is' "));
-        $params['trxnParams']['from_financial_account_id'] = CRM_Contribute_PseudoConstant::financialAccountType(
-          $financialTypeID, $relationTypeId);
+        $arAccountId = CRM_Contribute_PseudoConstant::financialAccountType($financialTypeID, $relationTypeId);
+
+        if ($params['contribution']->contribution_status_id == array_search('Cancelled', $contributionStatus)) {
+          $params['trxnParams']['to_financial_account_id'] = $arAccountId;
+          $params['trxnParams']['total_amount'] = -$params['total_amount'];
+          if (is_null($params['contribution']->creditnote_id) || $params['contribution']->creditnote_id == "null") {
+            $creditNoteId = self::createCreditNoteId();
+            CRM_Core_DAO::setFieldValue('CRM_Contribute_DAO_Contribution', $params['contribution']->id, 'creditnote_id', $creditNoteId);
+          }
+        }
+        else {
+          $params['trxnParams']['from_financial_account_id'] = $arAccountId;
+        }
       }
       $itemAmount = $params['trxnParams']['total_amount'];
     }
@@ -3718,6 +3761,30 @@ WHERE con.id = {$contributionId}
     if ($result->N > 1) {
       $errors['financial_type_id'] = ts('One or more line items have a different financial type than the contribution. Editing the financial type is not yet supported in this situation.');
     }
+  }
+
+  /**
+   * Generate credit note id with next avaible number
+   *
+   * @return string
+   *   Credit Note Id.
+   */
+  public static function createCreditNoteId() {
+    $prefixValue = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME, 'contribution_invoice_settings');
+
+    $creditNoteNum = CRM_Core_DAO::singleValueQuery("SELECT count(creditnote_id) as creditnote_number FROM civicrm_contribution");
+    $creditNoteId = NULL;
+
+    do {
+      $creditNoteNum++;
+      $creditNoteId = CRM_Utils_Array::value('credit_notes_prefix', $prefixValue) . "" . $creditNoteNum;
+      $result = civicrm_api3('Contribution', 'getcount', array(
+        'sequential' => 1,
+        'creditnote_id' => $creditNoteId,
+      ));
+    } while ($result > 0);
+
+    return $creditNoteId;
   }
 
 }

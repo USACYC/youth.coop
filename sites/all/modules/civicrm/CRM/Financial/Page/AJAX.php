@@ -113,7 +113,8 @@ class CRM_Financial_Page_AJAX {
         '3' => array(1, 9), //revenue
         '4' => array(7), //cost of sales
       );
-      $financialAccountTypeId = CRM_Core_DAO::getFieldValue('CRM_Financial_DAO_FinancialAccount', $_GET['_value'], 'financial_account_type_id');
+      $financialAccountId = CRM_Utils_Request::retrieve('_value', 'Positive', CRM_Core_DAO::$_nullObject);
+      $financialAccountTypeId = CRM_Core_DAO::getFieldValue('CRM_Financial_DAO_FinancialAccount', $financialAccountId, 'financial_account_type_id');
       $result = CRM_Core_PseudoConstant::get('CRM_Financial_DAO_EntityFinancialAccount', 'account_relationship');
     }
 
@@ -162,8 +163,8 @@ class CRM_Financial_Page_AJAX {
     ) {
       CRM_Utils_System::civiExit();
     }
-
-    $elements = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Product', $_GET['_value'], 'financial_type_id');
+    $productId = CRM_Utils_Request::retrieve('_value', 'Positive', CRM_Core_DAO::$_nullObject);
+    $elements = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Product', $productId, 'financial_type_id');
     CRM_Utils_JSON::output($elements);
   }
 
@@ -180,7 +181,7 @@ class CRM_Financial_Page_AJAX {
       }
     }
 
-    $entityID = CRM_Utils_Array::value('entityID', $_POST);
+    $entityID = CRM_Utils_Request::retrieve('entityID', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, NULL, 'POST');
     $methods = array(
       'assign' => 'addBatchEntity',
       'remove' => 'removeBatchEntity',
@@ -260,6 +261,11 @@ class CRM_Financial_Page_AJAX {
     CRM_Utils_JSON::output($response);
   }
 
+  /**
+   * Get output of financial transactions.
+   *
+   * @return string
+   */
   public static function getFinancialTransactionsList() {
     $sortMapper = array(
       0 => '',
@@ -274,6 +280,7 @@ class CRM_Financial_Page_AJAX {
     );
 
     $sEcho = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
+    $return = isset($_REQUEST['return']) ? CRM_Utils_Type::escape($_REQUEST['return'], 'Boolean') : FALSE;
     $offset = isset($_REQUEST['iDisplayStart']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer') : 0;
     $rowCount = isset($_REQUEST['iDisplayLength']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayLength'], 'Integer') : 25;
     $sort = isset($_REQUEST['iSortCol_0']) ? CRM_Utils_Array::value(CRM_Utils_Type::escape($_REQUEST['iSortCol_0'], 'Integer'), $sortMapper) : NULL;
@@ -370,9 +377,10 @@ class CRM_Financial_Page_AJAX {
           $row[$financialItem->id][$columnKey] = '<a href=' . $url . '>' . $financialItem->$columnKey . '</a>';
         }
         elseif ($columnKey == 'payment_method' && $financialItem->$columnKey) {
-          $row[$financialItem->id][$columnKey] = CRM_Core_OptionGroup::getLabel('payment_instrument', $financialItem->$columnKey);
+          $row[$financialItem->id][$columnKey] = CRM_Core_PseudoConstant::getLabel('CRM_Batch_BAO_Batch', 'payment_instrument_id', $financialItem->$columnKey);
           if ($row[$financialItem->id][$columnKey] == 'Check') {
-            $row[$financialItem->id][$columnKey] = $row[$financialItem->id][$columnKey] . ' (' . $financialItem->check_number . ')';
+            $checkNumber = $financialItem->check_number ? ' (' . $financialItem->check_number . ')' : '';
+            $row[$financialItem->id][$columnKey] = $row[$financialItem->id][$columnKey] . $checkNumber;
           }
         }
         elseif ($columnKey == 'amount' && $financialItem->$columnKey) {
@@ -382,7 +390,7 @@ class CRM_Financial_Page_AJAX {
           $row[$financialItem->id][$columnKey] = CRM_Utils_Date::customFormat($financialItem->$columnKey);
         }
         elseif ($columnKey == 'status' && $financialItem->$columnKey) {
-          $row[$financialItem->id][$columnKey] = CRM_Core_OptionGroup::getLabel('contribution_status', $financialItem->$columnKey);
+          $row[$financialItem->id][$columnKey] = CRM_Core_PseudoConstant::getLabel('CRM_Contribute_BAO_Contribution', 'contribution_status_id', $financialItem->$columnKey);
         }
       }
       if ($statusID == CRM_Core_OptionGroup::getValue('batch_status', 'Open')) {
@@ -425,7 +433,8 @@ class CRM_Financial_Page_AJAX {
       }
       else {
         $row[$financialItem->id]['check'] = NULL;
-        $links = CRM_Financial_Page_BatchTransaction::links();
+        $tempBAO = new CRM_Financial_Page_BatchTransaction();
+        $links = $tempBAO->links();
         unset($links['remove']);
         $row[$financialItem->id]['action'] = CRM_Core_Action::formLink(
           $links,
@@ -460,6 +469,9 @@ class CRM_Financial_Page_AJAX {
       'action',
     );
 
+    if ($return) {
+      return CRM_Utils_JSON::encodeDataTableSelector($financialitems, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
+    }
     header('Content-Type: application/json');
     echo CRM_Utils_JSON::encodeDataTableSelector($financialitems, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
     CRM_Utils_System::civiExit();
