@@ -24,9 +24,9 @@ files[] = includes/views/handlers/commerce_license_billing_handler_field_usage_d
 ; Tests
 files[] = tests/commerce_license_billing.test
 
-; Information added by Drupal.org packaging script on 2014-11-22
-version = "7.x-1.0-beta4"
+; Information added by Drupal.org packaging script on 2015-09-03
+version = "7.x-1.0-beta4+13-dev"
 core = "7.x"
 project = "commerce_license_billing"
-datestamp = "1416675181"
+datestamp = "1441305247"
 
