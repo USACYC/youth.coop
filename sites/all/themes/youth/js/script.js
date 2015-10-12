@@ -9,7 +9,7 @@
 
 /* 1.1 jQuery(document).ready() */
 jQuery(document).ready(function($){
-
+  $('#block-webform-client-block-372 .form-item input').addClass('populate');
 });
 
 /* 1.3 jQuery(window).load() */
