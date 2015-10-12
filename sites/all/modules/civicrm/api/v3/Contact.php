@@ -131,6 +131,7 @@ function _civicrm_api3_contact_create_spec(&$params) {
   );
   $params['prefix_id']['api.aliases'] = array('individual_prefix', 'individual_prefix_id');
   $params['suffix_id']['api.aliases'] = array('individual_suffix', 'individual_suffix_id');
+  $params['gender_id']['api.aliases'] = array('gender');
 }
 
 /**
@@ -723,7 +724,7 @@ function civicrm_api3_contact_getquick($params) {
   }
   $from = implode(' ', $from);
   $limit = (int) CRM_Utils_Array::value('limit', $params);
-  $limit = $limit > 0 ? $limit : 10;
+  $limit = $limit > 0 ? $limit : CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SEARCH_PREFERENCES_NAME, 'search_autocomplete_count', NULL, 10);
 
   // add acl clause here
   list($aclFrom, $aclWhere) = CRM_Contact_BAO_Contact_Permission::cacheClause('cc');
@@ -1137,4 +1138,43 @@ function _civicrm_api3_contact_getlist_output($result, $request) {
     }
   }
   return $output;
+}
+
+/**
+ * Check for duplicate contacts.
+ *
+ * @param array $params
+ *   Params per getfields metadata.
+ *
+ * @return array
+ *   API formatted array
+ */
+function civicrm_api3_contact_duplicatecheck($params) {
+  $dedupeParams = CRM_Dedupe_Finder::formatParams($params['match'], $params['match']['contact_type']);
+
+  // CRM-6431
+  // setting 'check_permission' here means that the dedupe checking will be carried out even if the
+  // person does not have permission to carry out de-dupes
+  // this is similar to the front end form
+  if (isset($params['check_permission'])) {
+    $dedupeParams['check_permission'] = $params['check_permission'];
+  }
+
+  $dupes = CRM_Dedupe_Finder::dupesByParams($dedupeParams, $params['match']['contact_type'], 'Unsupervised', array(), CRM_Utils_Array::value('dedupe_rule_id', $params));
+  $values = empty($dupes) ? array() : array_fill_keys($dupes, array());
+  return civicrm_api3_create_success($values, $params, 'Contact', 'duplicatecheck');
+}
+
+/**
+ * Declare metadata for contact dedupe function.
+ *
+ * @param $params
+ */
+function _civicrm_api3_contact_duplicatecheck_spec(&$params) {
+  $params['dedupe_rule_id'] = array(
+    'title' => 'Dedupe Rule ID (optional)',
+    'description' => 'This will default to the built in unsupervised rule',
+    'type' => CRM_Utils_Type::T_INT,
+  );
+  // @todo declare 'match' parameter. We don't have a standard for type = array yet.
 }

@@ -293,6 +293,10 @@ function commerce_license_billing_advanced_queue_info() {
       'retry after' => 86400,
       'max attempts' => 5,
     ),
+    'commerce_license_billing_order_refresh' => array(
+      'worker callback' => 'commerce_license_billing_order_refresh_queue_process',
+      'max attempts' => 1,
+    ),
   );
 }
 
@@ -606,21 +610,76 @@ function commerce_license_billing_generate_base_line_item(CommerceLicenseInterfa
     // the line item needs to charge for March.
     $billing_cycle_type = entity_load_single('cl_billing_cycle_type', $billing_cycle->type);
     $next_billing_cycle = $billing_cycle_type->getNextBillingCycle($billing_cycle, FALSE);
-    $line_item_wrapper->cl_billing_start = $next_billing_cycle->start;
-    $line_item_wrapper->cl_billing_end = $next_billing_cycle->end;
+    // The entity metadata wrapper's date calls are extremely slow, so we set
+    // the field values directly here since this can be called very frequently
+    // during an order refresh.
+    $line_item->cl_billing_start[LANGUAGE_NONE][0]['value'] = date("Y-m-d H:i:s", $next_billing_cycle->start);
+    $line_item->cl_billing_end[LANGUAGE_NONE][0]['value'] = date("Y-m-d H:i:s", $next_billing_cycle->end);
   }
   elseif ($product_wrapper->cl_billing_type->value() == 'postpaid') {
     // In case of postpaid, the line item always charges for the current
     // billing cycle.
-    $line_item_wrapper->cl_billing_start = $billing_cycle->start;
-    $line_item_wrapper->cl_billing_end = $billing_cycle->end;
+    $line_item->cl_billing_start[LANGUAGE_NONE][0]['value'] = date("Y-m-d H:i:s", $billing_cycle->start);
+    $line_item->cl_billing_end[LANGUAGE_NONE][0]['value'] = date("Y-m-d H:i:s", $billing_cycle->end);
   }
   // Trigger price calculation to get any needed discounts or price changes.
-  rules_invoke_event('commerce_product_calculate_sell_price', $line_item);
+  commerce_license_billing_invoke_pricing_event($line_item);
   // Save the line item.
   $line_item_wrapper->save();
 
   return $line_item_wrapper->value();
+}
+
+/**
+ * Queue worker to refresh orders which are too gnarly to be refreshed during a
+ * web request.
+ */
+function commerce_license_billing_order_refresh_queue_process($item) {
+  // Our $item->data contains the order ID, but if we load it straight off, it
+  // will go through the normal order load hook and create a new queue item. We
+  // engage in severe hackery to prevent this:
+  $already_refreshed_cheat = &drupal_static('commerce_license_billing_commerce_order_load', array());
+  $order_id = $item->data['order_id'];
+  $already_refreshed_cheat[$order_id] = TRUE;
+  // This will cause the hook (including the queue-me logic) to be entirely
+  // skipped. Now we can load safely:
+  $order = commerce_order_load($order_id);
+  $queue_refresh_timer = variable_get('commerce_license_billing_refresh_queue_timer', 600);
+  $last_refreshed = (!empty($order->data['last_refreshed']) ? $order->data['last_refreshed'] : 0);
+  if ((commerce_license_get_time() - $last_refreshed) > $queue_refresh_timer) {
+    commerce_license_billing_order_refresh($order, commerce_license_get_time());
+  }
+
+  return TRUE;
+}
+
+/**
+ * Adds the ability to override the standard product pricing mechanism for
+ * recurring line items. By default, this function wraps a rules invocation of
+ * commerce_product_calculate_sell_price (the default) but allows users to
+ * substitute an event name of their choice and invoke either rules, hooks, or
+ * both for this event.
+ *
+ * @param $line_item
+ */
+function commerce_license_billing_invoke_pricing_event($line_item) {
+  $event = variable_get('commerce_license_billing_recurring_pricing_event', 'commerce_product_calculate_sell_price');
+  $type = variable_get('commerce_license_billing_recurring_pricing_mode', 'rules');
+
+  switch ($type) {
+  case "rules":
+    $invoke = 'rules_invoke_event';
+    break;
+  case "hook":
+    $invoke = 'module_invoke_all';
+    break;
+  case "both":
+    $invoke = 'rules_invoke_all';
+    break;
+  }
+
+  // Invoke the chosen event in the chosen way.
+  $invoke($event, $line_item);
 }
 
 /**
@@ -633,13 +692,50 @@ function commerce_license_billing_generate_base_line_item(CommerceLicenseInterfa
 function commerce_license_billing_commerce_order_load($orders) {
   $refreshed = &drupal_static(__FUNCTION__, array());
   $recurring_statuses = array('recurring_open', 'recurring_usage_pending');
+  $use_refresh_queue = variable_get('commerce_license_billing_refresh_queue', TRUE);
+  $max_line_items = variable_get('commerce_license_billing_refresh_max_size', NULL);
+  if ($use_refresh_queue) {
+    $queue = DrupalQueue::get('commerce_license_billing_order_refresh');
+    $queue_refresh_timer = variable_get('commerce_license_billing_refresh_queue_timer', 600);
+  }
 
   foreach ($orders as $order) {
     // Refresh only if this is a recurring order and it hasn't been refreshed.
     if (!isset($refreshed[$order->order_id]) && $order->type == 'recurring' && in_array($order->status, $recurring_statuses)) {
-      // Refresh the order and add its ID to the refreshed array.
-      $refreshed[$order->order_id] = TRUE;
-      commerce_license_billing_order_refresh($order);
+      // There are other ways for an order to not be refreshed.
+      $refresh = TRUE;
+      // If an order's current number of line items exceeds the "max size"
+      // variable, it is not refreshed.
+      if (!is_null($max_line_items) && !empty($order->commerce_line_items[LANGUAGE_NONE]) && (count($order->commerce_line_items[LANGUAGE_NONE]) >= $max_line_items)) {
+        $refresh = FALSE;
+      }
+      else {
+        // Give other modules the opportunity to intervene. Returning FALSE
+        // results in no refresh.
+        foreach (module_implements('commerce_license_billing_refresh_deny') as $module) {
+          $fn = $module . '_commerce_license_billing_refresh_deny';
+          $result = call_user_func($fn, $order);
+          // Any exact FALSE return will make $refresh FALSE forever.
+          $refresh = $refresh && !($result === FALSE);
+        }
+      }
+
+      if ($refresh) {
+        // Refresh the order and add its ID to the refreshed array.
+        $refreshed[$order->order_id] = TRUE;
+        commerce_license_billing_order_refresh($order);
+      }
+      elseif ($use_refresh_queue) {
+        $last_refreshed = (!empty($order->data['last_refreshed']) ? $order->data['last_refreshed'] : 0);
+        if ((commerce_license_get_time() - $last_refreshed) > $queue_refresh_timer) {
+          // Queue a refresh. The refresh queue job disables this hook by
+          // accessing its drupal_static array externally so that we avoid an
+          // infinite loop of queue items.
+          $data['order_id'] = $order->order_id;
+          $data['title'] = "Refresh order #$order->order_id";
+          $queue->createItem($data);
+        }
+      }
     }
   }
 }
@@ -650,7 +746,7 @@ function commerce_license_billing_commerce_order_load($orders) {
  * @param $order
  *   The order entity.
  */
-function commerce_license_billing_order_refresh($order) {
+function commerce_license_billing_order_refresh($order, $set_refresh_timer = FALSE) {
   // The first time an order is saved, entity_load_unchanged() in the controller
   // leads to this function being called, with no line items to work on.
   if (empty($order->commerce_line_items)) {
@@ -662,7 +758,17 @@ function commerce_license_billing_order_refresh($order) {
   $licenses = array();
   $old_line_items = array();
   $old_line_item_ids = array();
+
+  // We are about to iterate over all line items. This means that lazy-loading
+  // them one-by-one is extremely inefficient from a performance perspective.
+  // Instead we can get them into the controller's static cache right away:
+  commerce_line_item_load_multiple($order_wrapper->commerce_line_items->raw());
   foreach ($order_wrapper->commerce_line_items as $line_item_wrapper) {
+    // Guard against empty line items.
+    if (!$line_item_wrapper->getIdentifier()) {
+      watchdog('commerce_license_billing', 'Empty line item found in order @id', array('@id' => $order->order_id), WATCHDOG_WARNING);
+      continue;
+    }
     // If this isn't a recurring line item, we need to make note of its ID so
     // we can accurately compare our original and updated line item ID arrays
     // at the end of the refresh process. The rest of the license-based logic
@@ -765,6 +871,13 @@ function commerce_license_billing_order_refresh($order) {
     commerce_line_item_delete_multiple($dropped_line_item_ids);
   }
 
+  // If we're using timed, queued refreshes, the queue will have passed a
+  // special argument to this function.
+  if ($set_refresh_timer) {
+    $order->data['last_refreshed'] = $set_refresh_timer;
+    $order_needs_save = TRUE;
+  }
+
   // Update the order, if new line items were created.
   if ($order_needs_save) {
     if ($line_items) {
@@ -826,15 +939,15 @@ function commerce_license_billing_populate_line_item($line_item, $charge) {
       $line_item_wrapper->commerce_unit_price->value(),
       TRUE
   );
-  $line_item_wrapper->cl_billing_start = $charge['cl_billing_start'];
-  $line_item_wrapper->cl_billing_end = $charge['cl_billing_end'];
+  $line_item->cl_billing_start[LANGUAGE_NONE][0]['value'] = date("Y-m-d H:i:s", $charge['cl_billing_start']);
+  $line_item->cl_billing_end[LANGUAGE_NONE][0]['value'] = date("Y-m-d H:i:s", $charge['cl_billing_end']);
   // Store the revision ID of the license used to generate the charge, if any.
   if (!empty($charge['license_revision_id'])) {
     $line_item->data['license_revision_id'] = $charge['license_revision_id'];
   }
 
   // Trigger price calculation to get any needed discounts or price changes.
-  rules_invoke_event('commerce_product_calculate_sell_price', $line_item);
+  commerce_license_billing_invoke_pricing_event($line_item);
 }
 
 /**
@@ -1020,6 +1133,7 @@ function commerce_license_billing_estimate_cost($license_type, $uid, $product, $
       $usage_group = $usage_groups[$group_name];
       $usage_product = commerce_product_load_by_sku($usage_group['product']);
       if ($quantity <= $usage_group['free_quantity']) {
+        $quantity = 0;
         $unit_price = $total_price = $zero_price;
       }
       else {
@@ -1083,12 +1197,12 @@ function commerce_license_billing_estimate_cost($license_type, $uid, $product, $
 function commerce_license_billing_calculate_sell_price($order_id, $product, $quantity, $billing_cycle) {
   $line_item = commerce_line_item_new('recurring', $order_id);
   $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
-  $line_item_wrapper->cl_billing_start = $billing_cycle->start;
-  $line_item_wrapper->cl_billing_end = $billing_cycle->end;
+  $line_item->cl_billing_start[LANGUAGE_NONE][0]['value'] = date("Y-m-d H:i:s", $billing_cycle->start);
+  $line_item->cl_billing_end[LANGUAGE_NONE][0]['value'] = date("Y-m-d H:i:s", $billing_cycle->end);
   $line_item_wrapper->quantity = $quantity;
   commerce_product_line_item_populate($line_item, $product);
   // Pass the line item to Rules.
-  rules_invoke_event('commerce_product_calculate_sell_price', $line_item);
+  commerce_license_billing_invoke_pricing_event($line_item);
   // Get the calculated unit price. If it was unset, provide a default.
   $unit_price = $line_item_wrapper->commerce_unit_price->value();
   if (empty($unit_price)) {
@@ -1106,24 +1220,39 @@ function commerce_license_billing_calculate_sell_price($order_id, $product, $qua
  *
  * @return
  *   A billing cycle entity, or FALSE if none found.
+ *
+ * This function does a complex set of joins to get the latest billing cycle for
+ * a given license. This is done (rather than using EntityFieldQuery) * because
+ * EFQ cannot chain entity references, and it ended up being more efficient to
+ * do several direct joins and get back the billing cycle ID.
+ *
+ * This also has the neat side-effect of avoiding the previous implementation's
+ * order load-and-refresh, which is an additional performance gain.
  */
 function commerce_license_billing_get_license_billing_cycle(CommerceLicenseInterface $license) {
-  // Load a line item that references the license.
-  $query = new EntityFieldQuery;
-  $query
-    ->entityCondition('entity_type', 'commerce_line_item')
-    ->entityCondition('bundle', 'recurring')
-    ->fieldCondition('cl_billing_license', 'target_id', $license->license_id)
-    ->range(0, 1);
+  // We construct a query that:
+  // a. Gets all orders which contain line items referencing this license
+  // b. Gets the associated billing cycles for those orders
+  $query = db_select('commerce_order', 'co');
+  // This is part a. We can't use EFQ here because it can't do entity reference joins in D7.
+  $query->join('field_data_commerce_line_items', 'fcli', "co.order_id = fcli.entity_id AND fcli.entity_type = 'commerce_order'");
+  $query->join('commerce_line_item', 'cli', "fcli.commerce_line_items_line_item_id = cli.line_item_id");
+  $query->join('field_data_cl_billing_license', 'fcbl', "cli.line_item_id = fcbl.entity_id AND fcbl.entity_type = 'commerce_line_item'");
+  $query->condition('fcbl.cl_billing_license_target_id', $license->license_id, '=');
+  // This is part b. This lets us get to the billing cycle in the same query.
+  $query->join('field_data_cl_billing_cycle', 'fcbc', "co.order_id = fcbc.entity_id AND fcbc.entity_type = 'commerce_order'");
+  $query->join('cl_billing_cycle', 'cbc', "fcbc.cl_billing_cycle_target_id = cbc.billing_cycle_id");
+  $query->isNotNull('cbc.billing_cycle_id');
+  $query->orderBy('cbc.start', 'DESC');
+  $query->range(0, 1);
+  $query->addField('cbc', 'billing_cycle_id');
+
   $result = $query->execute();
-  if ($result) {
-    $line_item_id = key($result['commerce_line_item']);
-    $line_item = commerce_line_item_load($line_item_id);
-    $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
-    return $line_item_wrapper->order->cl_billing_cycle->value();
+  if (!$result || !($billing_cycle_id = $result->fetchColumn())) {
+    return FALSE;
   }
   else {
-    return FALSE;
+    return entity_load_single('cl_billing_cycle', $billing_cycle_id);
   }
 }
 
@@ -1374,16 +1503,23 @@ function commerce_license_billing_plan_history_list(CommerceLicenseInterface $li
       ':start' => $billing_cycle->start,
       ':end' => $billing_cycle->end,
     );
-    // Fetch revisions that started or ended in this billing cycle, or are still
-    // in progress.
+    // Fetch revisions that overlap with this billing cycle. The SQL below
+    // encompasses 5 possibilities:
+    //
+    // 1. The revision starts and ends within this cycle.
+    // 2. The revision starts within this cycle, and ends after it.
+    // 3. The revision starts before this cycle, but ends within it.
+    // 4. The revision starts before this cycle, and ends after it.
+    // 5. The revision starts within this cycle, and has no end date.
     $result = db_query("SELECT revision_id, product_id, status,
                           revision_created AS start, revision_ended AS end
                           FROM {commerce_license_revision}
                           WHERE license_id = :license_id
                               AND (
-                                (revision_created BETWEEN :start AND :end) OR
-                                (revision_ended BETWEEN :start AND :end) OR
-                                (revision_ended = 0)
+                                (revision_created < :end) AND (
+                                  (revision_ended > :start) OR
+                                  (revision_ended = 0)
+                                )
                               )", $data);
     $license_history = $result->fetchAll(PDO::FETCH_ASSOC);
 
@@ -1437,14 +1573,15 @@ function commerce_license_billing_usage_history_list(CommerceLicenseBillingUsage
       ':start' => $billing_cycle->start,
       ':end' => $billing_cycle->end,
     );
-    // Fetch usage records that started or ended in this billing cycle, or are
-    // still in progress.
+    // Fetch usage records that overlap this billing cycle. See
+    // commerce_license_billing_plan_history_list for details.
     $result = db_query("SELECT * FROM {cl_billing_usage}
                           WHERE license_id = :license_id
                               AND (
-                                (start BETWEEN :start AND :end) OR
-                                (end BETWEEN :start AND :end) OR
-                                (end = 0)
+                                (start < :end) AND (
+                                  (end > :start) OR
+                                  (end = 0)
+                                )
                               )
                           ORDER BY start ASC", $data);
     $usage_history = $result->fetchAll(PDO::FETCH_ASSOC);

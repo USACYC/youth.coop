@@ -662,11 +662,17 @@ class CRM_Utils_System {
      * We typically call authenticate only when we need to bootstrap the CMS
      * directly via Civi and hence bypass the normal CMS auth and bootstrap
      * process typically done in CLI and cron scripts. See: CRM-12648
+     *
+     * Q: Can we move this to the userSystem class so that it can be tuned
+     * per-CMS? For example, when dealing with UnitTests UF, there's no
+     * userFrameworkDSN.
      */
     $session = CRM_Core_Session::singleton();
     $session->set('civicrmInitSession', TRUE);
 
-    $dbDrupal = DB::connect($config->userFrameworkDSN);
+    if ($config->userFrameworkDSN) {
+      $dbDrupal = DB::connect($config->userFrameworkDSN);
+    }
     return $config->userSystem->authenticate($name, $password, $loadCMSBootstrap, $realPath);
   }
 
@@ -1151,6 +1157,7 @@ class CRM_Utils_System {
   public static function redirectToSSL($abort = FALSE) {
     $config = CRM_Core_Config::singleton();
     $req_headers = self::getRequestHeaders();
+    // FIXME: Shouldn't the X-Forwarded-Proto check be part of CRM_Utils_System::isSSL()?
     if (CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'enableSSL') &&
       !self::isSSL() &&
       strtolower(CRM_Utils_Array::value('X_FORWARDED_PROTO', $req_headers)) != 'https'
@@ -1771,8 +1778,8 @@ class CRM_Utils_System {
    * @return string|FALSE
    */
   public static function evalUrl($url) {
-    if ($url === FALSE) {
-      return FALSE;
+    if (!$url || strpos($url, '{') === FALSE) {
+      return $url;
     }
     else {
       $config = CRM_Core_Config::singleton();
@@ -1780,18 +1787,31 @@ class CRM_Utils_System {
         '{ver}' => CRM_Utils_System::version(),
         '{uf}' => $config->userFramework,
         '{php}' => phpversion(),
-        '{sid}' => md5('sid_' . (defined('CIVICRM_SITE_KEY') ? CIVICRM_SITE_KEY : '') . '_' . $config->userFrameworkBaseURL),
+        '{sid}' => self::getSiteID(),
         '{baseUrl}' => $config->userFrameworkBaseURL,
         '{lang}' => $config->lcMessages,
         '{co}' => $config->defaultContactCountry,
       );
-      foreach (array_keys($vars) as $k) {
-        $vars[$k] = urlencode($vars[$k]);
-      }
-      return strtr($url, $vars);
+      return strtr($url, array_map('urlencode', $vars));
     }
   }
 
+  /**
+   * Returns the unique identifier for this site, as used by community messages.
+   *
+   * SiteID will be generated if it is not already stored in the settings table.
+   *
+   * @return string
+   */
+  public static function getSiteID() {
+    $sid = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'site_id');
+    if (!$sid) {
+      $config = CRM_Core_Config::singleton();
+      $sid = md5('sid_' . (defined('CIVICRM_SITE_KEY') ? CIVICRM_SITE_KEY : '') . '_' . $config->userFrameworkBaseURL);
+      civicrm_api3('Setting', 'create', array('domain_id' => 'all', 'site_id' => $sid));
+    }
+    return $sid;
+  }
 
   /**
    * Determine whether this is a developmental system.

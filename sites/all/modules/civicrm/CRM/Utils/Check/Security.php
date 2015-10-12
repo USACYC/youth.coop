@@ -58,6 +58,7 @@ class CRM_Utils_Check_Security {
    */
   public function checkAll() {
     $messages = array_merge(
+      $this->checkCxnOverrides(),
       $this->checkLogFileIsNotAccessible(),
       $this->checkUploadsAreNotAccessible(),
       $this->checkDirectoriesAreNotBrowseable(),
@@ -100,19 +101,22 @@ class CRM_Utils_Check_Security {
     if ($upload_url = explode($filePathMarker, $config->imageUploadURL)) {
       $url[] = $upload_url[0];
       if ($log_path = explode($filePathMarker, $log_filename)) {
-        $url[] = $log_path[1];
-        $log_url = implode($filePathMarker, $url);
-        $headers = @get_headers($log_url);
-        if (stripos($headers[0], '200')) {
-          $docs_url = $this->createDocUrl('checkLogFileIsNotAccessible');
-          $msg = 'The <a href="%1">CiviCRM debug log</a> should not be downloadable.'
-            . '<br />' .
-            '<a href="%2">Read more about this warning</a>';
-          $messages[] = new CRM_Utils_Check_Message(
-            'checkLogFileIsNotAccessible',
-            ts($msg, array(1 => $log_url, 2 => $docs_url)),
-            ts('Security Warning')
-          );
+        // CRM-17149: check if debug log path includes $filePathMarker
+        if (count($log_path) > 1) {
+          $url[] = $log_path[1];
+          $log_url = implode($filePathMarker, $url);
+          $headers = @get_headers($log_url);
+          if (stripos($headers[0], '200')) {
+            $docs_url = $this->createDocUrl('checkLogFileIsNotAccessible');
+            $msg = 'The <a href="%1">CiviCRM debug log</a> should not be downloadable.'
+              . '<br />' .
+              '<a href="%2">Read more about this warning</a>';
+            $messages[] = new CRM_Utils_Check_Message(
+              'checkLogFileIsNotAccessible',
+              ts($msg, array(1 => $log_url, 2 => $docs_url)),
+              ts('Security Warning')
+            );
+          }
         }
       }
     }
@@ -239,6 +243,34 @@ class CRM_Utils_Check_Security {
         );
       }
     }
+    return $messages;
+  }
+
+  /**
+   * Check that the sysadmin has not modified the Cxn
+   * security setup.
+   */
+  public function checkCxnOverrides() {
+    $list = array();
+    if (defined('CIVICRM_CXN_CA') && CIVICRM_CXN_CA !== 'CiviRootCA') {
+      $list[] = 'CIVICRM_CXN_CA';
+    }
+    if (defined('CIVICRM_CXN_APPS_URL') && CIVICRM_CXN_APPS_URL !== \Civi\Cxn\Rpc\Constants::OFFICIAL_APPMETAS_URL) {
+      $list[] = 'CIVICRM_CXN_APPS_URL';
+    }
+
+    $messages = array();
+
+    if (!empty($list)) {
+      $messages[] = new CRM_Utils_Check_Message(
+        'checkCxnOverrides',
+        ts('The system administrator has disabled security settings (%1). Connections to remote applications are insecure.', array(
+          1 => implode(', ', $list),
+        )),
+        ts('Security Warning')
+      );
+    }
+
     return $messages;
   }
 

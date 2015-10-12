@@ -39,6 +39,13 @@ Table of contents:
 
 #header-wrapper, #navigation-wrapper, #main-wrapper, #footer-wrapper { padding-top: 10px; padding-bottom: 10px; }
 .container { max-width: 980px; }
+div#main-wrapper {
+  padding-top: 0;
+}
+div#main {
+  background-color: rgb(247, 247, 247);
+  padding-top: 20px;
+}
 
 /**
  * 2. Typography
@@ -103,6 +110,8 @@ div.error, .error { color: #cc0000; }
 #header-wrapper, #navigation-wrapper { padding: 0; }
 #header, #navigation { background-color: #222; color: #ffe; }
 #header { padding-top: 20px; }
+#header a, #header a:link { color: lightgrey; }
+#header a:hover { color: white; }
 
 /* Social Links */
 #block-block-2 ul { margin: 0; }
@@ -127,17 +136,18 @@ p#tagline { font-family: 'Coming Soon', cursive; font-size: 1.2em; text-transfor
   .region-header .block { margin-bottom: 10px; }
 }
 @media screen and (min-width: 768px) {
-  #header { margin-top: 10px; height: 120px; }
+  #header { margin-top: 10px; height: 120px; padding-left: 25px; }
   .region-logo { width: 330px; position: absolute; top: 32px; }
-  p#tagline { position: absolute; width: 160px; left: 370px; top: 30px; }
-  .region-header { position: absolute; right: 10px; }
+  p#tagline { position: absolute; width: 155px; left: 370px; top: 30px; }
+  .region-header { position: absolute; right: 25px; }
   #block-block-2 { position: relative; top: 5px; }
   #block-search-form { position: relative; top: 19px; }
-  #block-block-3 { position: relative; top: 35px; }
+  #block-block-3 { position: relative; top: 30px; text-align: center; }
 }
 @media screen and (min-width: 992px) {
-  .region-logo { width: 483px; top: 15px; }
-  p#tagline { left: 560px; font-size: 1.4em; width: 187px; top: 38px; }
+  #header { height: 145px; }
+  .region-logo { width: 483px; top: 25px; }
+  p#tagline { left: 550px; font-size: 1.4em; width: 187px; top: 49px; }
   .region-header {  }
 }
 
@@ -162,6 +172,29 @@ p#tagline { font-family: 'Coming Soon', cursive; font-size: 1.2em; text-transfor
 .om-maximenu-no-style .leaf-voice .om-maximenu-middle { border-bottom: solid 5px #ED7800; }
 .om-maximenu-no-style .leaf-allies .om-maximenu-middle { border-bottom: solid 5px #0099BE; }
 }
+.om-link { text-transform: uppercase; }
+li.om-leaf.open { background-color: black; }
+
+@media screen and (min-width: 768px) {
+	#navigation-wrapper, #navigation { height: 44px; }
+  #navigation { padding-left: 10px; }
+	#navigation ul { /*height: 40px;*/ line-height: 40px; }
+	#navigation ul.main-menu li { margin: 5px 0; padding: 0; height: 30px; line-height: 30px; }
+	#navigation ul.main-menu li a { padding: 0 1em; }
+	#navigation ul.main-menu li.first a { padding-left: 0; }
+	#navigation ul.main-menu li.first { border-left: 0; }
+
+	/* Handles drop-down menus
+	top-margin = bottom-margin of parent li; top = height of parent li - top-margin */
+	#navigation li ul.main-menu { top: 25px; width: 200px; margin: 5px 0 0; padding: 0.5em; background: #fff; }
+	#navigation li ul.main-menu li a, #navigation li ul.main-menu li.first a { padding: 5px 0.5em; }
+
+	/* om-maximenu */
+	.om-maximenu ul.om-menu { height: 40px; line-height: 40px; }
+	.om-maximenu ul.om-menu li.om-leaf .om-link { padding: 9px 15px 5px 15px; }
+	.om-maximenu ul.om-menu li.om-leaf.first .om-link { padding-left: 15px; }
+	.om-maximenu-no-style .om-maximenu-content { top: 44px; }
+}
 
 /**
  * 5. Highlighted
@@ -170,6 +203,67 @@ p#tagline { font-family: 'Coming Soon', cursive; font-size: 1.2em; text-transfor
 /**
  * 6. Content
  */
+/* Homepage */
+section#block-wssf-1 {
+  border: solid 1px rgb(34, 34, 34)/*rgb(0, 153, 190)/rgb(200, 200, 200)*/;
+  border-radius: 5px;
+}
+#block-wssf-1 h2 {
+  background-color: rgb(34, 34, 34)/*(0, 153, 190)/rgb(200, 200, 200)*/;
+  padding: 5px;
+  margin: 0;
+	color: white;
+}
+li.wssf-fb-post {
+  background-color: white;
+  padding: 15px 10px;
+  margin: 22px 0;
+  border: solid 1px lightgrey;
+  border-left: none;
+  border-right: none;
+}
+li.wssf-fb-post:first-child { margin-top: 0; }
+#block-wssf-1 .more-link { padding: 5px; }
+
+/*section#block-webform-client-block-372 {
+  border: solid 2px rgb(99, 99, 99);
+  border-radius: 6px;
+}*/
+.front .block-webform h2 {
+  background-color: rgb(34, 34, 34);
+  color: white;
+  padding: 7px;
+  margin: 0;
+	border-top-left-radius: 7px;
+	border-top-right-radius: 7px;
+}
+.front .block-webform fieldset {
+  margin: 0;
+	background-color: #FFFFF3;
+  }
+.front .block-webform .form-actions { text-align: right; }
+.front .block-webform input[type="submit"] { margin-right: .625em; }
+
+/* Doesn't work - needs https://github.com/kevinburke/customize-twitter-1.1
+.timeline-header {
+  background-color: #222222;
+  color: white;
+  border-radius: 5px 5px 0 0;
+}
+.timeline-header h1 a:link {
+  color: white;
+}*/
+
+/* Allies page */
+body#page-allies .view h3 {
+  margin: 0;
+  background-color: rgb(34, 34, 34);
+  color: white;
+  padding: 5px;
+  font-size: 1.1em;
+  text-align: center;
+}
+
 
 /* 6.1 Messages */
 
@@ -195,6 +289,11 @@ p#tagline { font-family: 'Coming Soon', cursive; font-size: 1.2em; text-transfor
  */
 
 .sidebar .block { margin-bottom: 2em; }
+
+#block-webform-client-block-372 label {
+  text-indent: -999em;
+  height: 0;
+}
 
 /**
  * 8. Pre-footers, utility and footer
@@ -225,28 +324,6 @@ p#tagline { font-family: 'Coming Soon', cursive; font-size: 1.2em; text-transfor
 /* 9.3 iPad in portrait mode or larger */
 @media screen and (min-width: 768px) {
 
-	/* 4. Navigation */
-	/* if you want to display mobile menu on tablets, remove all the below from child.css,
-	   copy entire style.css from parent theme to child theme,
-	   add style.css in child theme .info file,
-	   and move the navigation section from the tablet query to the desktop query. */
-	#navigation-wrapper, #navigation { height: 40px; }
-	#navigation ul { /*height: 40px;*/ line-height: 40px; }
-	#navigation ul.main-menu li { margin: 5px 0; padding: 0; height: 30px; line-height: 30px; }
-	#navigation ul.main-menu li a { padding: 0 1em; }
-	#navigation ul.main-menu li.first a { padding-left: 0; }
-	#navigation ul.main-menu li.first { border-left: 0; }
-
-	/* Handles drop-down menus
-	top-margin = bottom-margin of parent li; top = height of parent li - top-margin */
-	#navigation li ul.main-menu { top: 25px; width: 200px; margin: 5px 0 0; padding: 0.5em; background: #fff; }
-	#navigation li ul.main-menu li a, #navigation li ul.main-menu li.first a { padding: 5px 0.5em; }
-
-	/* om-maximenu */
-	.om-maximenu ul.om-menu { height: 40px; line-height: 40px; }
-	.om-maximenu ul.om-menu li.om-leaf .om-link { padding: 0 1em; }
-	.om-maximenu ul.om-menu li.om-leaf.first .om-link { padding-left: 0; }
-	.om-maximenu-no-style .om-maximenu-content { top: 40px; }
 
 }
 

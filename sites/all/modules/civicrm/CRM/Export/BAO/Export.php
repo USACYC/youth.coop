@@ -254,10 +254,6 @@ class CRM_Export_BAO_Export {
       }
       elseif ($exportMode == CRM_Export_Form_Select::EVENT_EXPORT) {
         $returnProperties['participant_id'] = 1;
-        if (!empty($returnProperties['participant_role'])) {
-          unset($returnProperties['participant_role']);
-          $returnProperties['participant_role_id'] = 1;
-        }
       }
       elseif ($exportMode == CRM_Export_Form_Select::MEMBER_EXPORT) {
         $returnProperties['membership_id'] = 1;
@@ -667,11 +663,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     // as the array is not actually 'returnProperties' after the sql query is formed - making the alterations to it confusing
     foreach ($returnProperties as $key => $value) {
       $outputColumns[$key] = $value;
-      if (substr($key, -11) == 'campaign_id') {
-        // the field $dao->x_campaign_id_id holds the id whereas the field $dao->campaign_id
-        // we want to insert it directly after campaign id
-        $outputColumns[$key . '_id'] = 1;
-      }
     }
     while (1) {
       $limitQuery = "{$queryString} LIMIT {$offset}, {$rowCount}";
@@ -704,10 +695,10 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
           if ($setHeader) {
             $sqlDone = FALSE;
             // Split campaign into 2 fields for id and title
-            if (substr($field, -11) == 'campaign_id') {
+            if (substr($field, -14) == 'campaign_title') {
               $headerRows[] = ts('Campaign Title');
             }
-            elseif (substr($field, -14) == 'campaign_id_id') {
+            elseif (substr($field, -11) == 'campaign_id') {
               $headerRows[] = ts('Campaign ID');
             }
             elseif (isset($query->_fields[$field]['title'])) {
@@ -836,15 +827,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
             elseif ($field == 'provider_id' || $field == 'im_provider') {
               $fieldValue = CRM_Utils_Array::value($fieldValue, $imProviders);
             }
-            elseif ($field == 'participant_role_id') {
-              $participantRoles = CRM_Event_PseudoConstant::participantRole();
-              $sep = CRM_Core_DAO::VALUE_SEPARATOR;
-              $viewRoles = array();
-              foreach (explode($sep, $iterationDAO->$field) as $k => $v) {
-                $viewRoles[] = $participantRoles[$v];
-              }
-              $fieldValue = implode(',', $viewRoles);
-            }
             elseif ($field == 'master_id') {
               $masterAddressId = NULL;
               if (isset($iterationDAO->master_id)) {
@@ -919,17 +901,17 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                 elseif ($relationField == 'provider_id') {
                   $fieldValue = CRM_Utils_Array::value($relationValue, $imProviders);
                 }
-              }
-              // CRM-13995
-              elseif (is_object($relDAO) && in_array($relationField, array(
-                  'email_greeting',
-                  'postal_greeting',
-                  'addressee',
-                ))
-              ) {
-                //special case for greeting replacement
-                $fldValue = "{$relationField}_display";
-                $fieldValue = $relDAO->$fldValue;
+                // CRM-13995
+                elseif (is_object($relDAO) && in_array($relationField, array(
+                    'email_greeting',
+                    'postal_greeting',
+                    'addressee',
+                  ))
+                ) {
+                  //special case for greeting replacement
+                  $fldValue = "{$relationField}_display";
+                  $fieldValue = $relDAO->$fldValue;
+                }
               }
               elseif (is_object($relDAO) && $relationField == 'state_province') {
                 $fieldValue = CRM_Core_PseudoConstant::stateProvince($relDAO->state_province_id);
@@ -1335,7 +1317,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
     // early exit for master_id, CRM-12100
     // in the DB it is an ID, but in the export, we retrive the display_name of the master record
-    if ($fieldName == 'master_id') {
+    // also for current_employer, CRM-16939
+    if ($fieldName == 'master_id' || $fieldName == 'current_employer') {
       $sqlColumns[$fieldName] = "$fieldName varchar(128)";
       return;
     }
@@ -1343,7 +1326,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     if (substr($fieldName, -11) == 'campaign_id') {
       // CRM-14398
       $sqlColumns[$fieldName] = "$fieldName varchar(128)";
-      $sqlColumns[$fieldName . '_id'] = "{$fieldName}_id varchar(16)";
       return;
     }
 

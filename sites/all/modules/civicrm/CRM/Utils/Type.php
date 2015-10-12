@@ -160,42 +160,39 @@ class CRM_Utils_Type {
       case 'Integer':
       case 'Int':
         if (CRM_Utils_Rule::integer($data)) {
-          return $data;
+          return (int) $data;
         }
         break;
 
       case 'Positive':
-        // CRM-8925 the 3 below are for custom fields of this type
+        if (CRM_Utils_Rule::positiveInteger($data)) {
+          return (int) $data;
+        }
+        break;
+
+      // CRM-8925 for custom fields of this type
       case 'Country':
       case 'StateProvince':
-        // Checked for multi valued state/country value
-        if (is_array($data)) {
-          $returnData = TRUE;
-          // @todo Reuse of the $data variable = asking for trouble.
-          // @todo This code will always return the last item in the array. Intended?
-          foreach ($data as $data) {
-            if (CRM_Utils_Rule::positiveInteger($data) || CRM_Core_DAO::escapeString($data)) {
-              $returnData = TRUE;
-            }
-            else {
-              $returnData = FALSE;
+        // Handle multivalued data in delimited or array format
+        if (is_array($data) || (strpos($data, CRM_Core_DAO::VALUE_SEPARATOR) !== FALSE)) {
+          $valid = TRUE;
+          foreach (CRM_Utils_Array::explodePadded($data) as $item) {
+            if (!CRM_Utils_Rule::positiveInteger($item)) {
+              $valid = FALSE;
             }
           }
-          if ($returnData) {
+          if ($valid) {
             return $data;
           }
         }
-        elseif (!is_numeric($data) && CRM_Core_DAO::escapeString($data)) {
-          return $data;
-        }
         elseif (CRM_Utils_Rule::positiveInteger($data)) {
-          return $data;
+          return (int) $data;
         }
         break;
 
       case 'File':
         if (CRM_Utils_Rule::positiveInteger($data)) {
-          return $data;
+          return (int) $data;
         }
         break;
 
@@ -245,7 +242,7 @@ class CRM_Utils_Type {
         }
 
         if (CRM_Utils_Rule::validContact($data)) {
-          return $data;
+          return (int) $data;
         }
         break;
 
@@ -284,13 +281,13 @@ class CRM_Utils_Type {
       case 'Integer':
       case 'Int':
         if (CRM_Utils_Rule::integer($data)) {
-          return $data;
+          return (int) $data;
         }
         break;
 
       case 'Positive':
         if (CRM_Utils_Rule::positiveInteger($data)) {
-          return $data;
+          return (int) $data;
         }
         break;
 
