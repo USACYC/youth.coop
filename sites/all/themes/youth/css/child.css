@@ -87,18 +87,33 @@ legend { font: 1.333em Arial,Helvetica,'Helvetica Neue',sans-serif; color: #333;
 input.form-checkbox:checked + label, input.form-radio:checked + label { color: #333; }
 input[type="submit"], button, a.button {
   background: #dddddd; /* for non-css3 browsers */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dddddd', endColorstr='#ededed');
-  background: -webkit-gradient(linear, left top, left bottom, from(#dddddd), to(#ededed));
-  color: #000;
-  text-shadow: 1px 1px 1px #fff;
-  border: 1px solid #ccc;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0099BE', endColorstr='#0088A9');
+  background: -webkit-gradient(linear, left top, left bottom, from(#0099BE), to(#0088A9));
+  color: white;
+  text-shadow: none;
+  border: none;
+  border-radius: 2px;
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  box-shadow: none;
+  -moz-box-shadow: none;
+  -webkit-box-shadow: none;
 }
 .no-touch input[type="submit"]:hover, .no-touch button:hover, .no-touch a.button:hover {
-  background: #ededed;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dddddd');
-  background: -webkit-gradient(linear, left top, left bottom, from(#ededed), to(#dddddd));
-  background: -moz-linear-gradient(top,  #ededed,  #dddddd);
-  color: #000;
+  background: #00A6CE;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00A6CE', endColorstr='#0099BE');
+  background: -webkit-gradient(linear, left top, left bottom, from(#00A6CE), to(#0099BE));
+  background: -moz-linear-gradient(top,  #00A6CE,  #0099BE);
+  color: white;
+}
+#block-webform-client-block-372 input[type="submit"] {
+	background: #00B874;
+	background: -webkit-gradient(linear, left top, left bottom, from(#00B874), to(#00A266));
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00B874', endColorstr='#00A266'); }
+#block-webform-client-block-372 input[type="submit"]:hover {
+  background: #00A266;
+  background: -webkit-gradient(linear, left top, left bottom, from(#00A266), to(#00A266));
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00A266', endColorstr='#00A266');
 }
 div.error, .error { color: #cc0000; }
 .form-item input.error, .form-item textarea.error, .form-item select.error { border: 1px solid #cc0000; }
@@ -159,18 +174,33 @@ p#tagline { font-family: 'Coming Soon', cursive; font-size: 1.2em; text-transfor
 #navigation li ul.main-menu li { line-height: 40px; }
 
 /* om-maximenu */
-.om-maximenu-content { color: #333; }
+.om-maximenu-content { color: #CCC; }
+.om-maximenu-content a { color: white; }
+.om-maximenu-content a:hover { color: #CCC; }
+.om-maximenu-content a.active { color: #CCC; }
+.om-maximenu-content li, .om-maximenu-content p { font-size: 1.1em; }
 .om-maximenu.om-maximenu-main-menu ul.om-menu li.om-leaf,
 .om-maximenu.om-maximenu-main-menu ul.om-menu li.om-leaf .om-link { min-height: 40px; }
 .om-maximenu-no-style .om-maximenu-middle-right { padding: 1em; }
+.om-maximenu select {
+  background-color: rgb(16, 16, 16);
+  color: white;
+  border-color: black;
+  box-shadow: 0 1px 1px rgb(174, 174, 174);
+}
+.om-maximenu h3 { margin: 0; }
+.om-maximenu .field-name-field-cta-description { margin: 0; }
+.om-maximenu input[type="submit"] { margin: 0; }
+.om-maximenu .form-item { margin: 1em 0; }
+.om-maximenu p { line-height: 1.5em; }
 @media screen and (min-width: 768px) {
-.om-maximenu-no-style .om-maximenu-middle { background: rgb(255, 255, 243); }
-.om-maximenu-no-style .leaf-about .om-maximenu-middle { border-bottom: solid 5px #0099BE; }
-.om-maximenu-no-style .leaf-membership .om-maximenu-middle { border-bottom: solid 5px #81BC00; }
-.om-maximenu-no-style .leaf-programs .om-maximenu-middle { border-bottom: solid 5px #DF1A3D; }
-.om-maximenu-no-style .leaf-initiatives .om-maximenu-middle { border-bottom: solid 5px #00B874; }
-.om-maximenu-no-style .leaf-voice .om-maximenu-middle { border-bottom: solid 5px #ED7800; }
-.om-maximenu-no-style .leaf-allies .om-maximenu-middle { border-bottom: solid 5px #0099BE; }
+.om-maximenu-no-style .om-maximenu-middle { background: rgba(0, 0, 0, 0.85); }
+	.om-maximenu-no-style .leaf-about .om-maximenu-middle { border-bottom: solid 5px #0099BE; }
+	.om-maximenu-no-style .leaf-membership .om-maximenu-middle { border-bottom: solid 5px #81BC00; }
+	.om-maximenu-no-style .leaf-programs .om-maximenu-middle { border-bottom: solid 5px #DF1A3D; }
+	.om-maximenu-no-style .leaf-initiatives .om-maximenu-middle { border-bottom: solid 5px #00B874; }
+	.om-maximenu-no-style .leaf-voice .om-maximenu-middle { border-bottom: solid 5px #ED7800; }
+	.om-maximenu-no-style .leaf-allies .om-maximenu-middle { border-bottom: solid 5px #0099BE; }
 }
 .om-link { text-transform: uppercase; }
 li.om-leaf.open { background-color: black; }
@@ -205,25 +235,35 @@ li.om-leaf.open { background-color: black; }
  */
 /* Homepage */
 section#block-wssf-1 {
-  border: solid 1px rgb(34, 34, 34)/*rgb(0, 153, 190)/rgb(200, 200, 200)*/;
-  border-radius: 5px;
+  /*border: solid 1px rgb(34, 34, 34)/*rgb(0, 153, 190)/rgb(200, 200, 200);
+  border-radius: 5px;*/
 }
-#block-wssf-1 h2 {
-  background-color: rgb(34, 34, 34)/*(0, 153, 190)/rgb(200, 200, 200)*/;
+/*#block-wssf-1 h2 {
+  background-color: rgb(34, 34, 34)/*(0, 153, 190)/*rgb(200, 200, 200);
   padding: 5px;
   margin: 0;
 	color: white;
-}
+}*/
 li.wssf-fb-post {
   background-color: white;
-  padding: 15px 10px;
-  margin: 22px 0;
+  margin: 40px 0;
   border: solid 1px lightgrey;
   border-left: none;
   border-right: none;
 }
+.fb-post-content { padding: 10px; }
+li.wssf-fb-post h3 {
+  background-color: black;
+  color: silver;
+  padding: 5px 10px;
+  font-size: 1.1em;
+}
+li.wssf-fb-post p {
+  margin-bottom: .7em;
+}
 li.wssf-fb-post:first-child { margin-top: 0; }
 #block-wssf-1 .more-link { padding: 5px; }
+p.wssf-fb-description { display: none; }
 
 /*section#block-webform-client-block-372 {
   border: solid 2px rgb(99, 99, 99);
@@ -239,7 +279,7 @@ li.wssf-fb-post:first-child { margin-top: 0; }
 }
 .front .block-webform fieldset {
   margin: 0;
-	background-color: #FFFFF3;
+	background-color: white;
   }
 .front .block-webform .form-actions { text-align: right; }
 .front .block-webform input[type="submit"] { margin-right: .625em; }
@@ -306,6 +346,10 @@ body#page-allies .view h3 {
 /* 8.3 Utility */
 
 /* 8.4 Footer */
+#site-credit { background-color: #333; color: white; padding: 10px; }
+#footer a { color: white; }
+#footer h4 { font-weight: normal; font-size: 1.2em; margin-bottom: .4em; }
+#footer img { position: relative; top: 7px; }
 
 /**
  * 9. Media Queries
