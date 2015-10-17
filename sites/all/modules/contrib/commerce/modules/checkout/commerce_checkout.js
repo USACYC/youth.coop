@@ -7,8 +7,8 @@
 Drupal.behaviors.commerceCheckout = {
   attach: function (context, settings) {
     // When the buttons to move from page to page in the checkout process are
-    // clicked we disable them so they are not accidently clicked twice.
-    $('input.checkout-continue:not(.checkout-processed)', context).addClass('checkout-processed').click(function() {
+    // clicked we disable them so they are not accidentally clicked twice.
+    $('input.checkout-continue:not(.checkout-processed)', context).addClass('checkout-processed').submit(function() {
       var $this = $(this);
       $this.clone().insertAfter(this).attr('disabled', true).next().removeClass('element-invisible');
       $this.hide();
