@@ -95,8 +95,10 @@
 
 <div id="footer-wrapper">
   <footer id="footer" role="contentinfo" class="container">
+    <div class="row">
     <?php print render($page['footer']) ?>
-	<div id="site-credit"><a href="http://www.webskillet.com">website by Webskillet</a></div>
+	<div id="site-credit" class="col-md-8 col-sm-8"><h4>USA Cooperative Youth Council</h4>Hand-crafted hosting by Electric Embers<br><a href="http://www.webskillet.com">Design and development by Webskillet</a></div><img src="/sites/all/themes/youth/images/coop_orange.jpg" class="col-md-4 col-sm-4"/>
+  </div>
   </footer> <!-- /#footer -->
 </div>
 
