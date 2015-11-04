@@ -61,13 +61,25 @@ class wf_crm_admin_help {
   }
 
   static function contact_source() {
-     print '<p>' .
+    print '<p>' .
       t('This field will override the "Source Label" in "Additional Options".') .
       '</p>';
   }
 
   static function contact_cs() {
     self::contact_contact_id();
+  }
+
+  static function matching_rule() {
+    print '<p>' .
+      t('This determines how an <em>unknown</em> contact will be handled when the webform is submitted.') .
+      '</p><ul>' .
+      '<li>' . t('Select the "Default Unsupervised" rule for the same duplicate matching used by CiviCRM event registration &amp contribution forms.') . '</li>' .
+      '<li>' . t('Select a specific rule to customize how matching is performed.') . '</li>' .
+      '<li>' . t('Or select "- None -" to always create a new contact.') . '</li>' .
+      '</ul><p>' .
+      t('Note: Matching rules are only used if the contact is not already selected via "Existing Contact" field.') .
+      '</p>';
   }
 
   static function address_master_id() {
@@ -82,7 +94,7 @@ class wf_crm_admin_help {
   static function contribution_contribution_page_id() {
     print '<p>' .
       t("It is recommended to <a !link>create a new contribution page</a> solely for webform use. When configuring the page, most options will be irrelevant (such as profiles, premiums, widgets, recurring, etc.). Only the following need to be configured:",
-      array('!link' => 'target="_blank" href="' . url('civicrm/admin/contribute/add', array('query' => array('reset' => 1, 'action' => 'add'))) . '"')) .
+        array('!link' => 'target="_blank" href="' . url('civicrm/admin/contribute/add', array('query' => array('reset' => 1, 'action' => 'add'))) . '"')) .
       '</p><ul>' .
       '<li>' . t('Title: Displayed on the webform.') . '</li>' .
       '<li>' . t('Financial Type: Controls overall contribution type.') . '</li>' .
@@ -104,7 +116,7 @@ class wf_crm_admin_help {
   static function contribution_total_amount() {
     print '<p>' .
       t('This amount will be in addition to any paid events and memberships.') .
-     '</p>';
+      '</p>';
     self::fee();
   }
 
@@ -113,16 +125,16 @@ class wf_crm_admin_help {
       t('Price for this event. If multiple events or participants are registered with this field, the amount will be multiplied per-person, per-event.') .
       '</p><p>' .
       t('Note that any event prices you have configured in CiviCRM are not imported into the Webform - you will need to reconfigure them here.') .
-     '</p>';
+      '</p>';
     self::fee();
   }
 
   static function fee() {
     print '<p>' .
       t('Once added to the webform, this field can be configured in a number of ways by changing its settings.') .
-     '</p><strong>' .
-     t('Possible Widgets:') .
-     '</strong><ul>' .
+      '</p><strong>' .
+      t('Possible Widgets:') .
+      '</strong><ul>' .
       '<li>' . t('Number (default): Allow the user to enter an amount, optionally constrained by min, max, and increments.') . '</li>' .
       '<li>' . t('Hidden: Set the amount without giving the user a choice.') . '</li>' .
       '<li>' . t('Select/Radios: Allow the user to choose from one of several options.') . '</li>' .
@@ -179,6 +191,22 @@ class wf_crm_admin_help {
       '</p>';
   }
 
+  static function reg_options_disable_unregister() {
+    print '<p>' .
+      t('If this is selected, on "User Select mode", participants will not be unregistered from unchecked events.') .
+      '</p>';
+  }
+
+  static function reg_options_allow_url_load() {
+    print '<p>' .
+      t('Allow events in "User Select" mode to be auto-filled from URL.') .
+      '</p>'.'<br /><p>'.t('Example for "Register all":') .
+      '<br /><code>' . url("node", array('absolute' => TRUE)) . '/{node.nid}?event1={event1.event_id},{event2.event_id}</code></p><br />'.
+      t('Example for "Register separately":') .
+      '<br /><code>' . url("node", array('absolute' => TRUE)) .
+      '/{node.nid}?c1event1={event1.event_id},{event2.event_id}&amp;c2event1={event3.event_id}</code></p>';
+  }
+
   static function reg_options_show_past_events() {
     print '<p>' .
       t('Upcoming events will always be shown. To also display events that have ended, choose an option for how far in the past to search.') .
@@ -198,28 +226,39 @@ class wf_crm_admin_help {
   static function membership_membership_type_id() {
     print '<p>' .
       t('Fee will be calculated automatically based on selected membership type and number of terms chosen. A contribution page must be enabled to collect fees.') .
-     '</p>';
+      '</p>';
   }
 
   static function membership_status_id() {
     print '<p>' .
       t('If number of terms is enabled, status can be calculated automatically based on new/renewal status and payment.') .
-     '</p>';
+      '</p>';
   }
 
   static function membership_num_terms() {
     print '<p>' .
       t('Membership dates will be filled automatically by selecting terms. This can be overridden by entering dates manually.') .
-     '</p><p>' .
-      t('Note: Number of terms is required to calculate membership fees for paid memberships. Fees will not be charged when dates are entered manually') .
-     '</p>';
+      '</p><p>' .
+      t('Note: Number of terms is required to calculate membership fees for paid memberships.') .
+      '</p><p>'.
+      t('If you choose to enter dates manually, enabling membership fee field will provide the price. Otherwise the membership will be free') .
+      '</p>';
+  }
+
+  static function membership_fee_amount() {
+    print '<p>' .
+      t('Price for this membership per term. If this field is enabled, the default minimum membership fee from CiviCRM membership type settings will not be loaded.') .
+      '</p><p>' .
+      t('Note that if this field is enabled, the default minimum membership fee from CiviCRM membership type settings will not be loaded.') .
+      '</p>';
+    self::fee();
   }
 
   static function multiselect_options() {
     print '<p>' .
       t('Click the + button to select more than one option.') .
       '</p><p>' .
-      t('You may set options here and/or add this element to the webform ("User Select"). If you do both, options set here will be applied automatically and will not appear on the form.') .
+      t('You may set options here and/or add this element to the webform ("User Select"). Options chosen here will be applied automatically and will not appear on the form.') .
       '</p>';
   }
 
@@ -290,9 +329,9 @@ class wf_crm_admin_help {
 
   static function file_on_case() {
     print '<p>' .
-      t('Activity will be added to an existing case matching the following criteria.') .
+      t('Add this activity to either a specific case from this webform, or an already existing case based on matching criteria.') .
       '</p><p>' .
-      t('This will not open a new case; use the "Cases" tab to do so. Match these settings to those on the "Cases" tab if you wish this activity to be filed on a newly-created case.') .
+      t('These options will not open a new case; configure the "Cases" section to do so.') .
       '</p>';
   }
 
