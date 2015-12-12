@@ -593,4 +593,4 @@ ini_set('display_startup_errors', TRUE);
 // Local/Development Server
 $conf['environment_indicator_overwrite'] = TRUE;
 $conf['environment_indicator_overwritten_name'] = 'Local';
-$conf['environment_indicator_overwritten_color'] = '#731313';
+$conf['environment_indicator_overwritten_color'] = '#4D8F46';
