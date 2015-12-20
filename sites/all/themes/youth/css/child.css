@@ -124,7 +124,7 @@ div.error, .error { color: #cc0000; }
 
 /* user/register forms */
 @media screen and (min-width: 768px) {
-ul.primary { height: 24px; }
+ul.primary { height: 25px; }
 ul.primary li a {
   border-radius: 8px 8px 0 0;
   background-color: #222;
