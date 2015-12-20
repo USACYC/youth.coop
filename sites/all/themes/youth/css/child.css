@@ -89,7 +89,7 @@ legend a:link { color: white; }
 .form-type-checkbox label, .form-type-radio label { color: #999; }
 input.form-checkbox:checked + label, input.form-radio:checked + label { color: #333; }
 input[type="submit"], button, a.button {
-  background: #dddddd; /* for non-css3 browsers */
+  background: #0099BE; /* for non-css3 browsers */
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0099BE', endColorstr='#0088A9');
   background: -webkit-gradient(linear, left top, left bottom, from(#0099BE), to(#0088A9));
   color: white;
@@ -121,6 +121,45 @@ input[type="submit"], button, a.button {
 div.error, .error { color: #cc0000; }
 .form-item input.error, .form-item textarea.error, .form-item select.error { border: 1px solid #cc0000; }
 #modalContent span#modal-title { display: none; }
+
+/* user/register forms */
+@media screen and (min-width: 768px) {
+ul.primary { height: 24px; }
+ul.primary li a {
+  border-radius: 8px 8px 0 0;
+  background-color: #222;
+  border: none;
+  padding: 4px 0.75em 5px;
+  -moz-border-radius: 8px 8px 0 0;
+  -webkit-border-radius: 2px 2px 0 0;
+  color: grey;
+  position: relative;
+  top: 1px;
+}
+ul.primary li.active a {
+  background-color: #222;
+  border: none;
+  border-radius: 2px 2px 0 0;
+  color: white;
+  padding: 6px;
+  top: 0;
+}
+ul.primary li:first-child a {
+  padding-right: 13px;
+  padding-left: 13px;
+}
+.no-touch ul.primary li a:hover {
+  background-color: #222;
+  border: none;
+  color: white;
+}
+}
+#page-user-register fieldset legend { display: none; border: none; }
+#page-user-register fieldset { border: none; }
+#page-user-register .crm-container .crm-section .label { float: none; text-align: left; }
+#page-user-register .crm-container .crm-section .content { margin-left: 0; }
+#page-user-register div#editrow-first_name { margin-bottom: 10px; }
+#page-user-register div#profilewrap14 input { height: 23px; }
 
 /* checkout forms */
 fieldset#edit-youth-webform-civi-chkpane { margin-top: 5px; }
@@ -319,13 +358,6 @@ body#page-allies .view h3 {
   text-align: center;
 }
 
-/* user/register page */
-#page-user-register fieldset legend { display: none; border: none; }
-#page-user-register fieldset { border: none; }
-#page-user-register .crm-container .crm-section .label { float: none; text-align: left; }
-#page-user-register .crm-container .crm-section .content { margin-left: 0; }
-#page-user-register div#editrow-first_name { margin-bottom: 10px; }
-#page-user-register div#profilewrap14 input { height: 23px; }
 
 /* 6.1 Messages */
 
