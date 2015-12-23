@@ -1,0 +1,4 @@
+name = "Youth Miscellaneous Tweaks"
+description = "form overrides and such"
+core = 7.x 
+package = "custom"

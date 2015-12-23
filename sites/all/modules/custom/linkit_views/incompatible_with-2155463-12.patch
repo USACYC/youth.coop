@@ -1,0 +1,120 @@
+diff --git a/linkit_views.module b/linkit_views.module
+index 2b38bdb..1aad219 100644
+--- a/linkit_views.module
++++ b/linkit_views.module
+@@ -9,7 +9,7 @@
+  * Implements hook_ctools_plugin_directory().
+  */
+ function linkit_views_ctools_plugin_directory($module, $plugin) {
+-  if ($module == 'linkit' && !empty($plugin)) {
++  if ($module == 'linkit') {
+     return "plugins/" . $plugin;
+   }
+ }
+diff --git a/plugins/linkit_plugins/linkit_views.class.php b/plugins/linkit_plugins/linkit_views.class.php
+index 547b23a..0f3d49f 100644
+--- a/plugins/linkit_plugins/linkit_views.class.php
++++ b/plugins/linkit_plugins/linkit_views.class.php
+@@ -4,7 +4,7 @@
+  */
+ 
+ 
+-class LinkitViewsPlugin extends LinkitPlugin {
++class LinkitViewsPlugin extends LinkitSearchPlugin {
+ 
+   /**
+    * The uniq table name.
+@@ -16,7 +16,7 @@ class LinkitViewsPlugin extends LinkitPlugin {
+   /**
+    * Initialize this plugin.
+    */
+-  function __construct($plugin, $profile) {
++  public function __construct($plugin, $profile) {
+     parent::__construct($plugin, $profile);
+ 
+     $this->table_name = 'linkit_tmp_view_table_' . rand(0,1000) . rand(0,1000);
+@@ -25,7 +25,7 @@ class LinkitViewsPlugin extends LinkitPlugin {
+   /**
+    * Created a temporary table.
+    */
+-  function create_tmp_table() {
++  protected function create_tmp_table() {
+     // If this can be done in a more nice way, please tell me.
+     $temp_table = 'CREATE TEMPORARY TABLE {' . $this->table_name . '} (human_name VARCHAR(255) NOT NULL, display_title VARCHAR(65) NOT NULL, path VARCHAR(255) NOT NULL)';
+     return db_query($temp_table);
+@@ -34,7 +34,7 @@ class LinkitViewsPlugin extends LinkitPlugin {
+   /**
+    * Populate the temporary table with display name and path.
+    */
+-  function populate_tmp_table() {
++  protected function populate_tmp_table() {
+     // Get all displays that is "page" and their path
+     $query = db_select('views_view', 'w')
+       ->condition('wd.display_plugin', 'page')
+@@ -45,20 +45,22 @@ class LinkitViewsPlugin extends LinkitPlugin {
+     $result = $query->execute();
+ 
+     foreach ($result AS $view) {
+-      $optinos = unserialize($view->display_options);
+-      $fields = array(
+-        'display_title' => $view->display_title,
+-        'human_name' => $view->human_name,
+-        'path' => $optinos['path'],
+-      );
++      $options = unserialize($view->display_options);
++      if (drupal_valid_path($options['path'])) {
++        $fields = array(
++          'display_title' => $view->display_title,
++          'human_name' => $view->human_name,
++          'path' => $options['path'],
++        );
++      }
+       db_insert($this->table_name)->fields($fields)->execute();
+     }
+   }
+ 
+   /**
+-   * The autocomplete callback function for the Linkit Entity plugin.
++   * Implements LinkitSearchPluginInterface::fetchResults().
+    */
+-  function autocomplete_callback() {
++  public function fetchResults($search_string) {
+     // Create the tmp table.
+     $this->create_tmp_table();
+ 
+@@ -69,7 +71,7 @@ class LinkitViewsPlugin extends LinkitPlugin {
+ 
+     $query = db_select($this->table_name, 'tmp')
+       ->fields('tmp', array('path', 'display_title', 'human_name'))
+-      ->condition('tmp.display_title', '%' . db_like($this->serach_string) . '%', 'LIKE')
++      ->condition('tmp.display_title', '%' . db_like($search_string) . '%', 'LIKE')
+       ->addTag('linkit_views_autocomplete')
+       ->execute();
+ 
+@@ -81,6 +83,7 @@ class LinkitViewsPlugin extends LinkitPlugin {
+         'group' => t('View pages'),
+       );
+     }
+-    return  $matches;
++
++    return $matches;
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/plugins/linkit_plugins/linkit_views.inc b/plugins/linkit_plugins/linkit_views.inc
+index 56eca18..00a956f 100644
+--- a/plugins/linkit_plugins/linkit_views.inc
++++ b/plugins/linkit_plugins/linkit_views.inc
+@@ -8,7 +8,7 @@ $plugin = array(
+   'ui_title' => t("Views"),
+   'ui_description' => t('Extend Linkit with views support.'),
+   'handler' => array(
+-      'class' => 'LinkitViewsPlugin',
+-      'file' => 'linkit_views.class.php',
++    'class' => 'LinkitViewsPlugin',
++    'file' => 'linkit_views.class.php',
+   ),
+-);
+\ No newline at end of file
++);

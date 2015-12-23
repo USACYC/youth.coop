@@ -1,0 +1,52 @@
+<?php
+
+/**
+ * @file
+ * defines database schema
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function wssf_uninstall() {
+  variable_del('wssf_consumer_key');
+  variable_del('wssf_consumer_secret');
+  variable_del('wssf_user_token');
+  variable_del('wssf_user_secret');
+  variable_del('wssf_fb_app_id');
+  variable_del('wssf_fb_app_secret');
+  variable_del('wssf_enabled_block_0');
+  variable_del('wssf_title_block_0');
+  variable_del('wssf_id_block_0');
+  variable_del('wssf_posts_block_0');
+  variable_del('wssf_date_format_block_0');
+  variable_del('wssf_cache_block_0');
+  variable_del('wssf_enabled_block_1');
+  variable_del('wssf_title_block_1');
+  variable_del('wssf_id_block_1');
+  variable_del('wssf_posts_block_1');
+  variable_del('wssf_date_format_block_1');
+  variable_del('wssf_morelink_text_block_1');
+  variable_del('wssf_cache_block_1');
+  variable_del('wssf_enabled_block_3');
+  variable_del('wssf_title_block_3');
+  variable_del('wssf_mixed_min_fb');
+  variable_del('wssf_posts_block_3');
+  variable_del('wssf_cache_block_3');
+}
+
+/**
+ * 7.x-2.0-beta Remove system variables related to Pinterest block
+ */
+function wssf_update_7200() {
+
+  // removing variables associated with pinterest block
+  variable_del('wssf_enabled_block_2');
+  variable_del('wssf_title_block_2');
+  variable_del('wssf_id_block_2');
+  variable_del('wssf_posts_block_2');
+  variable_del('wssf_cache_block_2');
+  variable_del('wssf_morelink_text_block_2');
+  return 'Removed system variables related to Pinterest block';
+}
+

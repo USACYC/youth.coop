@@ -5,11 +5,6 @@ sites/*/civicrm.settings.php
 sites/*/files
 sites/*/private
 
-# Ignore project repos to avoid git submodules
-sites/all/modules/custom/
-sites/all/modules/custom/*
-sites/all/themes/webskillet15
-
 # Ignore backups
 *.sql
 *.tgz

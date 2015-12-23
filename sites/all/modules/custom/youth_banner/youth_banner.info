@@ -1,0 +1,12 @@
+name = youth_banner
+core = 7.x
+package = Features
+dependencies[] = bean
+dependencies[] = block
+dependencies[] = context
+dependencies[] = ctools
+dependencies[] = search
+features[context][] = banner
+features[context][] = login_link
+features[ctools][] = context:context:3
+features[features_api][] = api:2
