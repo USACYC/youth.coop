@@ -1,0 +1,51 @@
+<?php
+/**
+ * @file
+ * Main file of module.
+ */
+
+/**
+ * Implements hook_commerce_checkout_pane_info().
+ */
+function youth_webform_civi_chkpane_commerce_checkout_pane_info() {
+  $panes['youth_webform_civi_chkpane'] = array(
+    'title' => t('Webform CiviCRM Pane'),
+    'page' => 'checkout',
+    'weight' => 10,
+    'file' => 'includes/youth_webform_civi_chkpane.checkout_pane.inc',
+    'base' => 'youth_webform_civi_chkpane_pane',
+  );
+  return $panes;
+}
+
+/**
+ * Implements hook_commerce_checkout_page_info().
+ */
+function youth_webform_civi_chkpane_commerce_checkout_page_info() {
+  $checkout_pages = array();
+
+  $checkout_pages['member_info'] = array(
+    'name' => t('Member Info'),
+    'title' => t('Member Info'),
+    'help' => t('Tell us about yourself'),
+    'weight' => -10,
+    'status_cart' => FALSE,
+    'buttons' => TRUE,
+  );
+
+  return $checkout_pages;
+}
+
+/**
+ * Custom function for return all civi webforms.
+ */
+function youth_webform_civi_chkpane_get_webforms() {
+  $nids = db_query('SELECT nid FROM {webform_civicrm_forms}')->fetchAll();
+  $options = array();
+  foreach ($nids as $value) {
+    $node = node_load($value->nid);
+    $title = $node->title;
+    $options[$node->nid] = $node->title;
+  }
+  return $options;
+}

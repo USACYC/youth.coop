@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the youth_blog feature.
+ */
+
+include_once 'youth_blog.features.inc';

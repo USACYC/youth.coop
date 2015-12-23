@@ -1,0 +1,8 @@
+<?php
+/**
+ * @file
+ * Code for the youth_membership_product feature.
+ */
+
+include_once 'youth_membership_product.features.inc';
+

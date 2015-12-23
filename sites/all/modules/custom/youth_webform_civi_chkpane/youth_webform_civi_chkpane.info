@@ -1,0 +1,7 @@
+name = Youth Webform CiviCRM Checkout Pane
+description = Add webform CiviCRM form into checkout pane.
+core = 7.x
+
+dependencies[] = commerce_checkout
+dependencies[] = webform
+dependencies[] = webform_civicrm

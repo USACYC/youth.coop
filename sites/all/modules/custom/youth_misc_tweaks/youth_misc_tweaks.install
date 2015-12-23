@@ -1,0 +1,16 @@
+<?php
+function youth_misc_tweaks_install() {
+  // Get the weight of CiviCRM
+  $weight = db_select('system', 's')
+              ->fields('s', array('weight'))
+              ->condition('name', 'civicrm', '=')
+              ->execute()
+              ->fetchField();
+
+  // Set our module to a weight 1 heavier, so ours moves later in execution order
+  db_update('system')
+    ->fields(array('weight' => $weight + 1))
+    ->condition('name', 'youth_misc_tweaks', '=')
+    ->execute();
+}
+

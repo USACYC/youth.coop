@@ -1,0 +1,33 @@
+/* twitter block */
+.block ul.wssf-tweets { margin: 0; padding: 0; }
+.wssf-tweet { font-size: 1em; list-style: none outside none; padding: 0; position: relative; margin: 0 0 3em; overflow: hidden; }
+.wssf-tweet a { text-decoration: none; }
+.wssf-tweet-author { padding: 0 3em 0 0; }
+.wssf-tweet-avatar { width: 24px; height: 24px; float: left; margin-right: 4px; border-radius: 3px; }
+.wssf-tweet-author-name { font-size: 0.8em; line-height: 1em; display: block; font-weight: bold; }
+.wssf-tweet-author-name a { color: #000; }
+.wssf-tweet-author-user { font-size: 0.8em; line-height: 1em; display: block; }
+.wssf-tweet-author-user a { color: #999; }
+.wssf-tweet-timestamp { position: absolute; top: 0; right: 0; font-size: 1em; }
+.wssf-tweet-timestamp a { color: #999; }
+.wssf-tweet-tweet { font-size: 1em; clear: both; margin: 0.5em 0 0; }
+.wssf-tweet-retweet { padding-left: 20px; background: transparent url(images/retweet_on.png) no-repeat 0 0; color: #999; float: left; }
+.wssf-tweet-retweet a { color: #999; }
+.wssf-tweet-actions { float: right; padding: 0; margin: 0; }
+.wssf-tweet-actions li { float: left; width: 16px; height: 16px; list-style: none outside none; margin: 0 0 0 4px; padding: 0; }
+.wssf-tweet-actions li a { display: block; width: 16px; height: 16px; outline: 0; text-indent: -999em; }
+.wssf-tweet-action-reply, .wssf-tweet-action-reply a { background: transparent url(images/reply-sprite.png) no-repeat 0 0; }
+.wssf-tweet-action-retweet, .wssf-tweet-action-retweet a { background: transparent url(images/retweet-sprite.png) no-repeat 0 0; }
+.wssf-tweet-action-favorite, .wssf-tweet-action-favorite a { background: transparent url(images/favorite-sprite.png) no-repeat 0 0; }
+.wssf-tweet-actions li a:hover { background-position: -16px 0; }
+
+/* facebook block */
+
+.block ul.wssf-fb-posts { margin: 0; padding: 0; }
+.wssf-fb-post { font-size: 1em; list-style: none outside none; padding: 0; position: relative; margin: 0 0 1em; }
+.wssf-fb-post img { max-width: 100%; height: auto; }
+
+/* mixed block */
+
+.block ul.wssf-mixed-posts { margin: 0; padding: 0; }
+.wssf-mixed-posts .wssf-mixed-post { font-size: 1em; list-style: none outside none; padding: 0; position: relative; margin: 0 0 1em; }
