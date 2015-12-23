@@ -1,0 +1,47 @@
+<?php
+/**
+ * Implements hook_form_FORM_ID_alter
+ */
+function youth_misc_tweaks_form_user_register_form_alter(&$form, &$form_state) {
+  drupal_set_title('Register Here to Become a Member');
+  $form['civicrm-profile-register']['#weight'] = -11;
+  $form['actions']['submit']['#value'] = 'Join Now';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter
+ */
+function youth_misc_tweaks_form_user_login_alter(&$form) {
+  drupal_set_title('Register Here to Become a Member');
+  $form['pass']['#description'] = 'If you forgot your password you can <a href="/user/password" title="Login without password">register without it here</a>.';
+}
+
+/**
+ * Implements hook_menu_alter
+ */
+function youth_misc_tweaks_menu_alter(&$items){
+  $items['user/register']['title'] = 'New member registration';
+  $items['user/login']['title'] = 'Returning member registration';
+  $items['user/password']['type'] = MENU_CALLBACK;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter
+ */
+function youth_misc_tweaks_form_commerce_cart_add_to_cart_form_4_5_6_7_8_9_10_alter(&$form, &$form_state, &$form_id) {
+  $form['submit']['#value'] = 'Sign up';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter
+  */
+  function youth_misc_tweaks_form_commerce_checkout_form_checkout_alter(&$form) {
+  $form['commerce_payment']['payment_method']['#access'] = FALSE;
+  $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']['#title'] = 'Sign me up for monthly membership payments';
+  $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']['#default_value'] = TRUE;
+  #$form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']['#access'] = FALSE;
+  $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']['#disabled'] = TRUE;
+  $form['commerce_payment']['payment_details']['cardonfile_instance_default']['#default_value'] = TRUE;
+  $form['commerce_payment']['payment_details']['cardonfile_instance_default']['#access'] = FALSE;
+}
+

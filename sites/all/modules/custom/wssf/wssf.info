@@ -1,0 +1,12 @@
+name = Webskillet Social Feeds
+description = Provides blocks which can display Tweets, Facebook posts, or a mixture of the two
+core = 7.x
+package = Webskillet Custom
+version = 7.x-2.0-beta
+configure = admin/config/services/ws-social-feeds
+files[] = wssf.admin.inc
+files[] = wssf.install
+files[] = wssf.module
+files[] = inc/fbPageFeed.inc.php
+files[] = tmhOAuth/tmhOAuth.php
+files[] = tmhOAuth/tmhUtilities.php
