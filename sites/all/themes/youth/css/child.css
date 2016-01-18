@@ -165,6 +165,11 @@ ul.primary li:first-child a {
 fieldset#edit-youth-webform-civi-chkpane { margin-top: 5px; }
 .page-checkout-review h1#page-title, .page-checkout-review .checkout-help, fieldset#edit-youth-webform-civi-chkpane > legend { display: none; }
 
+/* banner search form */
+#search-block-form--2 { position: relative; }
+#search-block-form--2 input.search { padding: 5px 20px 5px 5px; max-width: none; margin: 0; border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; }
+#search-block-form--2 input.form-submit { position: absolute; top: 4px; right: 5px; }
+
 /**
  * 3. Header
  */
