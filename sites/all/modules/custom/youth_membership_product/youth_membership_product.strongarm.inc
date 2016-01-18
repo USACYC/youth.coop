@@ -27,6 +27,7 @@ function youth_membership_product_strongarm() {
   $strongarm->value = array(
     'membership_product' => 'membership_product',
     'product' => 0,
+    'recurring' => 0,
   );
   $export['commerce_license_product_types'] = $strongarm;
 
