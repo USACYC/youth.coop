@@ -36,7 +36,7 @@ function youth_misc_tweaks_form_commerce_cart_add_to_cart_form_4_5_6_7_8_9_10_al
  * Implements hook_form_FORM_ID_alter
   */
   function youth_misc_tweaks_form_commerce_checkout_form_checkout_alter(&$form) {
-  $form['commerce_payment']['payment_method']['#access'] = FALSE;
+//this line breaks stripe checkout (no iframe) $form['commerce_payment']['payment_method']['#access'] = FALSE;
   $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']['#title'] = 'Sign me up for monthly membership payments';
   $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']['#default_value'] = TRUE;
   #$form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']['#access'] = FALSE;
