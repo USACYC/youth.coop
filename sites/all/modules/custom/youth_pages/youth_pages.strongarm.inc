@@ -62,7 +62,7 @@ function youth_pages_strongarm() {
       'display' => array(
         'product:sku' => array(
           'default' => array(
-            'weight' => '15',
+            'weight' => '19',
             'visible' => FALSE,
           ),
           'show_product_with_custom_price' => array(
@@ -80,7 +80,7 @@ function youth_pages_strongarm() {
         ),
         'product:title' => array(
           'default' => array(
-            'weight' => '16',
+            'weight' => '20',
             'visible' => FALSE,
           ),
           'show_product_with_custom_price' => array(
@@ -98,7 +98,7 @@ function youth_pages_strongarm() {
         ),
         'product:status' => array(
           'default' => array(
-            'weight' => '19',
+            'weight' => '22',
             'visible' => FALSE,
           ),
           'show_product_with_custom_price' => array(
@@ -116,7 +116,7 @@ function youth_pages_strongarm() {
         ),
         'product:commerce_price' => array(
           'default' => array(
-            'weight' => '18',
+            'weight' => '21',
             'visible' => FALSE,
           ),
           'show_product_with_custom_price' => array(
@@ -224,7 +224,7 @@ function youth_pages_strongarm() {
         ),
         'product:cl_billing_cycle_type' => array(
           'default' => array(
-            'weight' => '23',
+            'weight' => '26',
             'visible' => FALSE,
           ),
           'custom_sidebar' => array(
@@ -234,7 +234,7 @@ function youth_pages_strongarm() {
         ),
         'product:cl_billing_type' => array(
           'default' => array(
-            'weight' => '24',
+            'weight' => '27',
             'visible' => FALSE,
           ),
           'custom_sidebar' => array(
@@ -244,7 +244,7 @@ function youth_pages_strongarm() {
         ),
         'product:cl_schedule_changes' => array(
           'default' => array(
-            'weight' => '25',
+            'weight' => '28',
             'visible' => FALSE,
           ),
           'custom_sidebar' => array(
@@ -254,7 +254,7 @@ function youth_pages_strongarm() {
         ),
         'product:commerce_license_duration' => array(
           'default' => array(
-            'weight' => '22',
+            'weight' => '25',
             'visible' => FALSE,
           ),
           'custom_sidebar' => array(
@@ -264,7 +264,7 @@ function youth_pages_strongarm() {
         ),
         'product:commerce_license_role' => array(
           'default' => array(
-            'weight' => '20',
+            'weight' => '23',
             'visible' => FALSE,
           ),
           'custom_sidebar' => array(
@@ -274,7 +274,7 @@ function youth_pages_strongarm() {
         ),
         'product:commerce_license_type' => array(
           'default' => array(
-            'weight' => '21',
+            'weight' => '24',
             'visible' => FALSE,
           ),
           'custom_sidebar' => array(
