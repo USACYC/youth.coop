@@ -109,11 +109,11 @@ input[type="submit"], button, a.button {
   background: -moz-linear-gradient(top,  #00A6CE,  #0099BE);
   color: white;
 }
-#block-webform-client-block-372 input[type="submit"] {
+#block-webform-client-block-372 input[type="submit"], #block-webform-client-block-372--2 input[type="submit"] {
 	background: #00B874;
 	background: -webkit-gradient(linear, left top, left bottom, from(#00B874), to(#00A266));
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00B874', endColorstr='#00A266'); }
-#block-webform-client-block-372 input[type="submit"]:hover {
+#block-webform-client-block-372 input[type="submit"]:hover, #block-webform-client-block-372--2 input[type="submit"]:hover {
   background: #00A266;
   background: -webkit-gradient(linear, left top, left bottom, from(#00A266), to(#00A266));
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00A266', endColorstr='#00A266');
@@ -328,7 +328,7 @@ p.wssf-fb-description { display: none; }
   border: solid 2px rgb(99, 99, 99);
   border-radius: 6px;
 }*/
-.front .block-webform h2 {
+#block-webform-client-block-372--2 h2, #block-webform-client-block-372 h2 {
   background-color: rgb(34, 34, 34);
   color: white;
   padding: 7px;
@@ -336,12 +336,12 @@ p.wssf-fb-description { display: none; }
 	border-top-left-radius: 7px;
 	border-top-right-radius: 7px;
 }
-.front .block-webform fieldset {
+#block-webform-client-block-372--2 fieldset, #block-webform-client-block-372 fieldset {
   margin: 0;
 	background-color: white;
   }
-.front .block-webform .form-actions { text-align: right; }
-.front .block-webform input[type="submit"] { margin-right: .625em; }
+#block-webform-client-block-372--2 .form-actions, #block-webform-client-block-372 .form-actions { text-align: right; }
+#block-webform-client-block-372--2 input[type="submit"], #block-webform-client-block-372 input[type="submit"] { margin-right: .625em; }
 
 /* Doesn't work - needs https://github.com/kevinburke/customize-twitter-1.1
 .timeline-header {
