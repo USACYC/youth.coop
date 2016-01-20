@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the youth_config feature.
+ */
+
+include_once 'youth_config.features.inc';
