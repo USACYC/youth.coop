@@ -47,5 +47,12 @@ a2a_config.exclude_services = ["facebook", "linkedin", "twitter"];';
   );
   $export['addtoany_nodetypes'] = $strongarm;
 
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'honeypot_protect_all_forms';
+  $strongarm->value = 1;
+  $export['honeypot_protect_all_forms'] = $strongarm;
+
   return $export;
 }
