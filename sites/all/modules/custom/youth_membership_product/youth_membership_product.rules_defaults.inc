@@ -9,6 +9,32 @@
  */
 function youth_membership_product_default_rules_configuration() {
   $items = array();
+  $items['commerce_cart_add_to_cart_message'] = entity_import('rules_config', '{ "commerce_cart_add_to_cart_message" : {
+      "LABEL" : "Display an Add to Cart message",
+      "PLUGIN" : "reaction rule",
+      "OWNER" : "rules",
+      "TAGS" : [ "Commerce Cart" ],
+      "REQUIRES" : [ "rules", "commerce_cart" ],
+      "ON" : { "commerce_cart_product_add" : [] },
+      "DO" : [
+        { "drupal_message" : { "message" : "You chose the [commerce-product:title].  Please proceed to register and pay..." } }
+      ]
+    }
+  }');
+  $items['commerce_checkout_order_status_update'] = entity_import('rules_config', '{ "commerce_checkout_order_status_update" : {
+      "LABEL" : "Update the order status on checkout completion",
+      "PLUGIN" : "reaction rule",
+      "OWNER" : "rules",
+      "TAGS" : [ "Commerce Checkout" ],
+      "REQUIRES" : [ "commerce_order", "commerce_checkout" ],
+      "ON" : { "commerce_checkout_complete" : [] },
+      "DO" : [
+        { "commerce_order_update_state" : { "commerce_order" : [ "commerce-order" ], "order_state" : "completed" } }
+      ]
+    }
+  }');
+
+      
   $items['rules_has_membership_product'] = entity_import('rules_config', '{ "rules_has_membership_product" : {
       "LABEL" : "has membership product",
       "PLUGIN" : "or",
@@ -98,18 +124,6 @@ function youth_membership_product_default_rules_configuration() {
         }
       ],
       "DO" : [ { "redirect" : { "url" : "user\\/register" } } ]
-    }
-  }');
-  $items['commerce_cart_add_to_cart_message'] = entity_import('rules_config', '{ "commerce_cart_add_to_cart_message" : {
-      "LABEL" : "Display an Add to Cart message",
-      "PLUGIN" : "reaction rule",
-      "OWNER" : "rules",
-      "TAGS" : [ "Commerce Cart" ],
-      "REQUIRES" : [ "rules", "commerce_cart" ],
-      "ON" : { "commerce_cart_product_add" : [] },
-      "DO" : [
-        { "drupal_message" : { "message" : "You chose the [commerce-product:title].  Please proceed to register and pay..." } }
-      ]
     }
   }');
   return $items;
