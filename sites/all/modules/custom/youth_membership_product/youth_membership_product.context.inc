@@ -26,9 +26,9 @@ function youth_membership_product_context_default_contexts() {
   $context->reactions = array(
     'block' => array(
       'blocks' => array(
-        'addtoany-addtoany_button' => array(
-          'module' => 'addtoany',
-          'delta' => 'addtoany_button',
+        'block-5' => array(
+          'module' => 'block',
+          'delta' => '5',
           'region' => 'content',
           'weight' => '10',
         ),
