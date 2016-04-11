@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2016                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC (c) 2004-2016
  * $Id$
  *
  */
@@ -89,10 +89,7 @@ class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
    * @deprecated
    */
   public static function createCivimailLock($name) {
-    $serverWideLock = \CRM_Core_BAO_Setting::getItem(
-      \CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
-      'civimail_server_wide_lock'
-    );
+    $serverWideLock = \Civi::settings()->get('civimail_server_wide_lock');
     return new static($name, NULL, $serverWideLock);
   }
 
@@ -135,7 +132,12 @@ class CRM_Core_Lock implements \Civi\Core\Lock\LockInterface {
   }
 
   /**
+   * Acquire lock.
+   *
+   * @param int $timeout
+   *
    * @return bool
+   * @throws \CRM_Core_Exception
    */
   public function acquire($timeout = NULL) {
     if (!$this->_hasLock) {
