@@ -13,7 +13,7 @@ function youth_misc_tweaks_form_user_register_form_alter(&$form, &$form_state) {
  */
 function youth_misc_tweaks_form_user_login_alter(&$form) {
   drupal_set_title('Register Here to Become a Member');
-  $form['pass']['#description'] = 'If you forgot your password you can <a href="/user/password" title="Login without password">register without it here</a>.';
+  $form['pass']['#description'] = 'If you forgot your password you can <a href="/user/password" title="Login without password">reset it here</a>.';
 }
 
 /**
